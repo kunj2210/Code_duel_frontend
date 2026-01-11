@@ -6,7 +6,7 @@ import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
 import EmptyState from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Leetcode = () => {
   const { user } = useAuth();
@@ -14,7 +14,7 @@ const Leetcode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
-
+  const navigate = useNavigate();
   useEffect(() => {
     loadProfile();
   }, []);
@@ -96,7 +96,7 @@ const Leetcode = () => {
           <EmptyState
             title="No profile data"
             description="Make sure you've stored a LeetCode session in the backend."
-            action={{ label: "Go to Settings", onClick: () => {} }}
+            action={{ label: "Go to Settings", onClick: () => {navigate('/settings')} }}
           />
         )}
 

@@ -70,3 +70,13 @@ export interface ChartData {
   solved: number;
   target: number;
 }
+
+export type RawData = {
+  date?: string;
+  displayDate?: string;
+  solved?: number;
+  passed?: number;
+  submissions?: number;
+  target?: number;
+  dailyTarget?: number;
+};
