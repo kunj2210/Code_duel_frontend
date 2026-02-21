@@ -199,6 +199,44 @@ export const challengeApi = {
 };
 
 // ============================================================================
+// INVITE APIs
+// ============================================================================
+export const inviteApi = {
+  sendInvite: async (challengeId: string, userId: string) => {
+    const response = await api.post<ApiResponse<any>>(
+      `/api/challenges/${challengeId}/invites`,
+      { userId }
+    );
+    return response.data;
+  },
+
+  getMyInvites: async () => {
+    const response = await api.get<ApiResponse<any[]>>("/api/invites");
+    return response.data;
+  },
+
+  respondToInvite: async (inviteId: string, action: "accepted" | "rejected") => {
+    const response = await api.patch<ApiResponse<any>>(
+      `/api/invites/${inviteId}`,
+      { action }
+    );
+    return response.data;
+  },
+};
+
+// ============================================================================
+// USER APIs
+// ============================================================================
+export const userApi = {
+  searchUsers: async (query: string) => {
+    const response = await api.get<ApiResponse<any[]>>("/api/users/search", {
+      params: { q: query },
+    });
+    return response.data;
+  },
+};
+
+// ============================================================================
 // DASHBOARD APIs
 // ============================================================================
 export const dashboardApi = {

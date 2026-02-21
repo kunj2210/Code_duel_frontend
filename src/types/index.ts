@@ -19,6 +19,25 @@ export interface Challenge {
   createdBy: string;
   members: ChallengeMember[];
   isActive: boolean;
+  isPrivate?: boolean;
+}
+
+export interface ChallengeInvite {
+  id: string;
+  challengeId: string;
+  challengeName: string;
+  senderId: string;
+  senderName: string;
+  receiverId: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}
+
+export interface UserSearchResult {
+  id: string;
+  username: string;
+  leetcodeUsername: string;
+  avatar?: string;
 }
 
 export interface ChallengeMember {
