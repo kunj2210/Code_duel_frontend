@@ -19,14 +19,15 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { leetcodeApi, authApi } from "@/lib/api";
+import { leetcodeApi, authApi, SessionStatus } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { getErrorMessage } from "@/lib/utils";
 
 const Settings: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [sessionStatus, setSessionStatus] = useState<any>(null);
+  const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
 
   // LeetCode Session State
   const [leetcodeSession, setLeetcodeSession] = useState({
@@ -72,11 +73,10 @@ const Settings: React.FC = () => {
         setLeetcodeSession({ cookie: "", csrfToken: "", expiresAt: "" });
         checkSessionStatus();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to save session",
-        description:
-          error.response?.data?.message || "Please check your credentials.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -95,10 +95,10 @@ const Settings: React.FC = () => {
         });
         setSessionStatus(null);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to invalidate session",
-        description: error.response?.data?.message || "Please try again.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -119,10 +119,10 @@ const Settings: React.FC = () => {
           updateUser({ ...user!, leetcodeUsername });
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to update profile",
-        description: error.response?.data?.message || "Please try again.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -253,10 +253,10 @@ const Settings: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="cookie">LEETCODE_SESSION Cookie</Label>
                     <Input
-                      id="cookie"
-                      type="password"
-                      value={leetcodeSession.cookie}
-                      onChange={(e) =>
+                    id="cookie"
+                    type="password"
+                    value={leetcodeSession.cookie}
+                    onChange={(e) =>
                         setLeetcodeSession({
                           ...leetcodeSession,
                           cookie: e.target.value,

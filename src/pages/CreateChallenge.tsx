@@ -23,6 +23,7 @@ import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { challengeApi } from "@/lib/api";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getErrorMessage } from "@/lib/utils";
 
 const CreateChallenge: React.FC = () => {
   const [name, setName] = useState("");
@@ -99,7 +100,7 @@ const CreateChallenge: React.FC = () => {
         penaltyAmount: parseInt(penaltyAmount),
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
-        visibility : visibility as "PUBLIC" | "PRIVATE",
+        visibility: visibility as "PUBLIC" | "PRIVATE",
       });
 
       if (response.success) {
@@ -111,11 +112,10 @@ const CreateChallenge: React.FC = () => {
       } else {
         throw new Error(response.message || "Failed to create challenge");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to create challenge",
-        description:
-          error.response?.data?.message || error.message || "Please try again.",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     } finally {
@@ -153,12 +153,12 @@ const CreateChallenge: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Challenge Name</Label>
                 <Input
-                  id="name"
+                id="name"
                   placeholder="e.g., January Grind, Hard Mode Warriors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={errors.name ? "border-destructive" : ""}
-                />
+                  />
                 {errors.name && (
                   <p className="text-xs text-destructive">{errors.name}</p>
                 )}
@@ -197,6 +197,7 @@ const CreateChallenge: React.FC = () => {
                   </p>
                 </div>
 
+                    
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Minimum Difficulty</Label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
@@ -283,7 +284,7 @@ const CreateChallenge: React.FC = () => {
                   Public challenges are visible to all users. Private challenges are only visible to the owner and invited members.
                 </p>
               </div>
-             
+
 
               <div className="flex gap-3 pt-4">
                 <Button

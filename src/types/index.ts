@@ -3,9 +3,13 @@
 export interface User {
   id: string;
   name: string;
+  username?: string;
   email: string;
   avatar?: string;
   leetcodeUsername: string;
+  createdAt?: string;
+  memberships?: unknown[];
+  ownedChallenges?: unknown[];
 }
 
 export interface Challenge {
