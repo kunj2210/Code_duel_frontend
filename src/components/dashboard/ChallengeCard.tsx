@@ -29,16 +29,16 @@ const difficultyColors = {
 const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
   const daysRemaining = Math.ceil(
     (new Date(challenge.endDate).getTime() - new Date().getTime()) /
-    (1000 * 60 * 60 * 24)
+      (1000 * 60 * 60 * 24)
   );
 
   const totalDays = Math.ceil(
     (new Date(challenge.endDate).getTime() -
       new Date(challenge.startDate).getTime()) /
-    (1000 * 60 * 60 * 24)
+      (1000 * 60 * 60 * 24)
   );
 
-  const progress = totalDays > 0 ? Math.max(0, Math.round(((totalDays - Math.max(0, daysRemaining)) / totalDays) * 100)) : 0;
+  const progress = Math.round(((totalDays - daysRemaining) / totalDays) * 100);
   const completedMembers =
     challenge.members?.filter((m) => m.status === "completed").length || 0;
 
@@ -110,7 +110,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Target className="h-4 w-4" />
-              <span>{challenge.minSubmissionsPerDay}/day</span>
+              <span>{challenge.minSubmissionsPerDay || 1}/day</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <DollarSign className="h-4 w-4" />
@@ -118,7 +118,7 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Calendar className="h-4 w-4" />
-              <span>{daysRemaining > 0 ? daysRemaining : 0} days left</span>
+              <span>{daysRemaining} days left</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="h-4 w-4" />
@@ -131,13 +131,13 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({ challenge }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Progress</span>
-              <span>{progress > 0 ? progress : 0}%</span>
+              <span>{progress}%</span>
             </div>
             <Progress value={progress} className="h-2" />
           </div>
 
           <div className="flex items-center -space-x-2">
-            {challenge.members?.slice(0, 5).map((member) => (
+            {challenge.members?.slice(0, 5).map((member, index) => (
               <Avatar
                 key={member.userId}
                 className="h-8 w-8 border-2 border-card"

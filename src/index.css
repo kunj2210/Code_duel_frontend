@@ -123,24 +123,6 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
-
-  /* Accessible focus rings - Pure & Consistent */
-  :focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background transition-shadow;
-  }
-
-  /* Improved focus for interactive elements that don't use ring naturally */
-  a:focus-visible,
-  button:focus-visible,
-  [role="button"]:focus-visible {
-    @apply ring-2 ring-ring ring-offset-2;
-  }
-
-  /* Focus states for cards inside links */
-  a:focus-visible .Card,
-  a:focus-visible .hover-lift {
-    @apply ring-2 ring-ring ring-offset-2;
-  }
 }
 
 @layer utilities {
@@ -165,21 +147,18 @@
 
   .animate-shimmer {
     animation: shimmer 2s linear infinite;
-    background: linear-gradient(90deg,
-        hsl(var(--muted)) 0%,
-        hsl(var(--muted-foreground) / 0.1) 50%,
-        hsl(var(--muted)) 100%);
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 0%,
+      hsl(var(--muted-foreground) / 0.1) 50%,
+      hsl(var(--muted)) 100%
+    );
     background-size: 200% 100%;
   }
 
   @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-
-    100% {
-      background-position: -200% 0;
-    }
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 
   .animate-pulse-slow {
@@ -191,15 +170,8 @@
   }
 
   @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .animate-scale-in {
@@ -207,15 +179,8 @@
   }
 
   @keyframes scaleIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
   }
 
   .animate-slide-up {
@@ -223,15 +188,8 @@
   }
 
   @keyframes slideUp {
-    from {
-      opacity: 0;
-      transform: translateY(20px);
-    }
-
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .hover-lift {

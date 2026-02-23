@@ -14,7 +14,7 @@ interface TodayStatusProps {
 
 const TodayStatus: React.FC<TodayStatusProps> = ({ stats, onComplete }) => {
   const [hasAnimated, setHasAnimated] = useState(false);
-  const progress = stats.todayTarget > 0 ? (stats.todaySolved / stats.todayTarget) * 100 : 0;
+  const progress = (stats.todaySolved / stats.todayTarget) * 100;
   const isCompleted = stats.todayStatus === 'completed';
   const isFailed = stats.todayStatus === 'failed';
 
@@ -109,7 +109,7 @@ const TodayStatus: React.FC<TodayStatusProps> = ({ stats, onComplete }) => {
         </div>
 
         {!isCompleted && !isFailed && (
-          <Button
+          <Button 
             onClick={triggerConfetti}
             className="w-full gradient-primary"
           >
@@ -118,7 +118,7 @@ const TodayStatus: React.FC<TodayStatusProps> = ({ stats, onComplete }) => {
         )}
 
         {isCompleted && (
-          <Button
+          <Button 
             onClick={triggerConfetti}
             variant="outline"
             className="w-full border-success/50 text-success hover:bg-success/10"

@@ -28,9 +28,9 @@ const Dashboard: React.FC = () => {
     activeChallenges: 0,
     totalSolved: 0,
   });
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [activityData, setActivityData] = useState<ActivityData[]>([]);
-  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [challenges, setChallenges] = useState<any[]>([]);
+  const [activityData, setActivityData] = useState<any[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
           longestStreak: statsData.longestStreak || 0,
           totalPenalties: statsData.totalPenalties || 0,
           activeChallenges: dashboardSummary?.activeChallenges || 0,
-          totalSolved: statsData.totalSubmissions || statsData.totalSolved || 0,
+          totalSolved: statsData.totalSubmissions || 0,
         });
       }
 
@@ -200,7 +200,7 @@ const Dashboard: React.FC = () => {
               description="Create or join a challenge to start competing with others and stay motivated!"
               action={{
                 label: "Create Challenge",
-                onClick: () => { },
+                onClick: () => {},
               }}
             />
           )}
