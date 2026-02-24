@@ -82,8 +82,12 @@ const InviteUserDialog: React.FC<InviteUserDialogProps> = ({
           setResults([]);
         }
       } catch (err: any) {
-        // Ignore AbortError — triggered intentionally when a newer search starts
-        if (!(err instanceof Error && err.name === "AbortError")) {
+        // Ignore AbortError / Axios cancellation — triggered intentionally when a newer search starts
+        const isAbortOrCancel =
+          (err instanceof Error &&
+            (err.name === "AbortError" || err.name === "CanceledError")) ||
+          (err && (err as any).code === "ERR_CANCELED");
+        if (!isAbortOrCancel) {
           setResults([]);
         }
       } finally {
