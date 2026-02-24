@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Code2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { ErrorMessage } from '@/components/ui/error-message';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
@@ -99,9 +100,7 @@ const Register: React.FC = () => {
                   onChange={(e) => setName(e.target.value)}
                   className={errors.name ? 'border-destructive' : ''}
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name}</p>
-                )}
+                <ErrorMessage message={errors.name} />
               </div>
 
               <div className="space-y-2">
@@ -114,9 +113,7 @@ const Register: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className={errors.email ? 'border-destructive' : ''}
                 />
-                {errors.email && (
-                  <p className="text-xs text-destructive">{errors.email}</p>
-                )}
+                <ErrorMessage message={errors.email} />
               </div>
 
               <div className="space-y-2">
@@ -129,9 +126,7 @@ const Register: React.FC = () => {
                   onChange={(e) => setLeetcodeUsername(e.target.value)}
                   className={errors.leetcodeUsername ? 'border-destructive' : ''}
                 />
-                {errors.leetcodeUsername && (
-                  <p className="text-xs text-destructive">{errors.leetcodeUsername}</p>
-                )}
+                <ErrorMessage message={errors.leetcodeUsername} />
               </div>
 
               <div className="space-y-2">
@@ -153,9 +148,7 @@ const Register: React.FC = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-destructive">{errors.password}</p>
-                )}
+                <ErrorMessage message={errors.password} />
               </div>
 
               <Button type="submit" className="w-full gradient-primary" disabled={isLoading}>
