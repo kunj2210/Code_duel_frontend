@@ -162,7 +162,7 @@ const ChallengePage: React.FC = () => {
   );
 
   const difficultyDisplay =
-    challenge.difficultyFilter && challenge.difficultyFilter.length > 0
+    challenge.difficultyFilter?.length > 0
       ? challenge.difficultyFilter.join(", ")
       : "Any";
 
