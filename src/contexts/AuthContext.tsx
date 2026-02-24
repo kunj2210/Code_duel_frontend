@@ -1,152 +1,32 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { User } from "@/types";
-import { authApi } from "@/lib/api";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (emailOrUsername: string, password: string) => Promise<void>;
-  register: (
-    username: string,
-    email: string,
-    password: string,
-    leetcodeUsername: string
-  ) => Promise<void>;
+  login: (userData: User) => void;
   logout: () => void;
-  updateUser: (updatedUser: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
-  // Load user from localStorage on mount
-  useEffect(() => {
-    const loadUser = () => {
-      const token = localStorage.getItem("auth_token");
-      const savedUser = localStorage.getItem("user");
-
-      if (
-        token &&
-        savedUser &&
-        token !== "undefined" &&
-        token !== "null"
-      ) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error("Failed to parse stored user:", error);
-          localStorage.removeItem("auth_token");
-          localStorage.removeItem("user");
-        }
-      }
-
-      setIsLoading(false);
-    };
-
-    loadUser();
-  }, []);
-
-  const login = async (emailOrUsername: string, password: string) => {
-    setIsLoading(true);
-
-    try {
-      const response = await authApi.login(emailOrUsername, password);
-
-      if (!response.success || !response.data) {
-        throw new Error(response.message || "Login failed");
-      }
-
-      const { user: userData, token } = response.data;
-
-      const mappedUser: User = {
-        id: userData.id,
-        name: userData.username,
-        email: userData.email,
-        leetcodeUsername: userData.leetcodeUsername,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
-      };
-
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user", JSON.stringify(mappedUser));
-      setUser(mappedUser);
-    } catch (error) {
-      console.error("Login error:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const register = async (
-    username: string,
-    email: string,
-    password: string,
-    leetcodeUsername: string
-  ) => {
-    setIsLoading(true);
-
-    try {
-      const response = await authApi.register(
-        email,
-        username,
-        password,
-        leetcodeUsername
-      );
-
-      if (!response.success || !response.data) {
-        throw new Error(response.message || "Registration failed");
-      }
-
-      const { user: userData, token } = response.data;
-
-      const mappedUser: User = {
-        id: userData.id,
-        name: userData.username,
-        email: userData.email,
-        leetcodeUsername: userData.leetcodeUsername,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
-      };
-
-      localStorage.setItem("auth_token", token);
-      localStorage.setItem("user", JSON.stringify(mappedUser));
-      setUser(mappedUser);
-    } catch (error) {
-      console.error("Registration error:", error);
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
+  const login = (userData: User) => {
+    setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("user");
     setUser(null);
   };
 
-  const updateUser = (updatedUser: User) => {
-    localStorage.setItem("user", JSON.stringify(updatedUser));
-    setUser(updatedUser);
-  };
-
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isAuthenticated: !!user,
-        isLoading,
-        login,
-        register,
-        logout,
-        updateUser,
-      }}
-    >
+    <AuthContext.Provider value={{ user, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -154,10 +34,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used inside AuthProvider");
   }
-
   return context;
 };

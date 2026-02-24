@@ -20,7 +20,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { leetcodeApi, authApi } from "@/lib/api";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/src/pages/src/AuthContext";
 
 const Settings: React.FC = () => {
   const { user, updateUser } = useAuth();

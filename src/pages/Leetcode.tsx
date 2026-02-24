@@ -1,5 +1,5 @@
 import Layout from "@/components/layout/Layout";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/src/pages/src/AuthContext";
 import { authApi, leetcodeApi } from "@/lib/api";
 import { useEffect, useState, useMemo } from "react";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";

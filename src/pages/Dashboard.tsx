@@ -9,7 +9,7 @@ import ProgressChart from "@/components/dashboard/ProgressChart";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
 import ChallengeCard from "@/components/dashboard/ChallengeCard";
 import EmptyState from "@/components/common/EmptyState";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/src/pages/src/AuthContext";
 import { dashboardApi, challengeApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Stats } from "@/types";
