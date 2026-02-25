@@ -20,13 +20,22 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Leetcode from "./pages/Leetcode";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,      // 2 minutes — avoid redundant refetches
+      gcTime: 10 * 60 * 1000,         // 10 minutes — keep cache for back-navigation
+      retry: 1,                        // Retry once on failure
+      refetchOnWindowFocus: true,      // Refresh data when user returns to tab
+    },
+  },
+});
 
 // Protected Route wrapper
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { isAuthenticated ,isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) {
     return null;
   }
@@ -40,7 +49,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
 
 // Auth Route wrapper (redirect if already logged in)
 const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated , isLoading} = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) {
     return null;
   }

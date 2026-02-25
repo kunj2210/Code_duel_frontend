@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Trophy, Medal, Award, TrendingUp, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -6,47 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Layout from '@/components/layout/Layout';
 import LeaderboardTable from '@/components/leaderboard/LeaderboardTable';
-import { dashboardApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import { LeaderboardEntry } from '@/types';
+
+// ✅ Centralized React Query hook — cached globally
+import { useGlobalLeaderboard } from '@/hooks/useLeaderboard';
 
 const Leaderboard: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadLeaderboard();
-  }, []);
-
-  const loadLeaderboard = async () => {
-    setIsLoading(true);
-    try {
-      const response = await dashboardApi.getGlobalLeaderboard();
-      if (response.success && response.data) {
-        setLeaderboardData(response.data);
-      } else {
-        throw new Error(response.message || 'Failed to fetch leaderboard data');
-      }
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
-      toast({
-        title: 'Error loading leaderboard',
-        description: 'Could not fetch the latest rankings. Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // ✅ Single hook replaces useState + useEffect + loadLeaderboard + toast error handling
+  const { data: leaderboardData = [], isLoading } = useGlobalLeaderboard();
 
   const topThree = leaderboardData.slice(0, 3);
 
-  const totalSolved = leaderboardData.reduce((acc, e) => acc + (e.totalSolved || 0), 0);
-  const longestStreak = leaderboardData.length > 0 ? Math.max(...leaderboardData.map(e => e.currentStreak || 0)) : 0;
-  const totalPenalties = leaderboardData.reduce((acc, e) => acc + (e.penaltyAmount || 0), 0);
+  const totalSolved = leaderboardData.reduce((acc: number, e: LeaderboardEntry) => acc + (e.totalSolved || 0), 0);
+  const longestStreak = leaderboardData.length > 0 ? Math.max(...leaderboardData.map((e: LeaderboardEntry) => e.currentStreak || 0)) : 0;
+  const totalPenalties = leaderboardData.reduce((acc: number, e: LeaderboardEntry) => acc + (e.penaltyAmount || 0), 0);
 
   return (
     <Layout>

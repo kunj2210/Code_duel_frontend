@@ -1,12 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
-  Calendar,
-  Target,
-  DollarSign,
   Users,
-  Clock,
   Loader2,
   PlayCircle,
 } from "lucide-react";
@@ -18,72 +14,42 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
 import ProgressChart from "@/components/dashboard/ProgressChart";
 import { mockChartData } from "@/data/mockData";
-import { cn } from "@/lib/utils";
-import { challengeApi, dashboardApi } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
-const difficultyColors = {
-  easy: "bg-success/10 text-success border-success/20",
-  medium: "bg-warning/10 text-warning border-warning/20",
-  hard: "bg-destructive/10 text-destructive border-destructive/20",
-  any: "bg-primary/10 text-primary border-primary/20",
-};
+// ✅ Centralized React Query hooks — single source of truth
+import {
+  useChallenge,
+  useChallengeLeaderboard,
+  useJoinChallenge,
+  useActivateChallenge,
+} from "@/hooks/useChallenges";
 
 const ChallengePage: React.FC = () => {
   const { id } = useParams();
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const [challenge, setChallenge] = useState<any>(null);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isJoining, setIsJoining] = useState(false);
-  const [isActivating, setIsActivating] = useState(false);
+  // ✅ Cached queries — no manual useState/useEffect/loadChallengeData
+  const { data: challenge, isLoading: challengeLoading } = useChallenge(id);
+  const { data: leaderboard = [], isLoading: leaderboardLoading } =
+    useChallengeLeaderboard(id);
 
-  useEffect(() => {
-    if (id) loadChallengeData();
-  }, [id]);
+  // ✅ Mutations with auto cache invalidation — no manual reload needed
+  const joinMutation = useJoinChallenge();
+  const activateMutation = useActivateChallenge();
 
-  const loadChallengeData = async () => {
-    setIsLoading(true);
-    try {
-      const challengeResponse = await challengeApi.getById(id!);
-      const leaderboardResponse =
-        await dashboardApi.getChallengeLeaderboard(id!);
-
-      if (challengeResponse.success && challengeResponse.data) {
-        setChallenge(challengeResponse.data);
-      }
-
-      if (leaderboardResponse.success && leaderboardResponse.data) {
-        setLeaderboard(leaderboardResponse.data);
-      }
-    } catch {
-      toast({
-        title: "Failed to load challenge",
-        description: "Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isLoading = challengeLoading || leaderboardLoading;
 
   const handleJoinChallenge = async () => {
     if (!id) return;
-    setIsJoining(true);
     try {
-      const response = await challengeApi.join(id);
-      if (response.success) {
-        toast({
-          title: "Joined challenge!",
-          description: "You have successfully joined the challenge.",
-        });
-        loadChallengeData();
-      } else {
-        throw new Error(response.message);
-      }
+      await joinMutation.mutateAsync(id);
+      toast({
+        title: "Joined challenge!",
+        description: "You have successfully joined the challenge.",
+      });
+      // ✅ No need to manually reload — cache auto-invalidates
     } catch (error: any) {
       toast({
         title: "Failed to join challenge",
@@ -91,30 +57,24 @@ const ChallengePage: React.FC = () => {
           error.response?.data?.message || error.message || "Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsJoining(false);
     }
   };
 
   const handleActivateChallenge = async () => {
-    setIsActivating(true);
+    if (!id) return;
     try {
-      const response = await challengeApi.updateStatus(id!, "ACTIVE");
-      if (response.success) {
-        toast({
-          title: "Challenge activated!",
-          description: "Your challenge is now active.",
-        });
-        loadChallengeData();
-      }
+      await activateMutation.mutateAsync({ id, status: "ACTIVE" });
+      toast({
+        title: "Challenge activated!",
+        description: "Your challenge is now active.",
+      });
+      // ✅ No need to manually reload — cache auto-invalidates
     } catch {
       toast({
         title: "Failed to activate challenge",
         description: "Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsActivating(false);
     }
   };
 
@@ -140,28 +100,23 @@ const ChallengePage: React.FC = () => {
 
   const daysRemaining = Math.ceil(
     (new Date(challenge.endDate).getTime() - Date.now()) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   const totalDays = Math.ceil(
     (new Date(challenge.endDate).getTime() -
       new Date(challenge.startDate).getTime()) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   const progress = Math.round(
     ((totalDays - daysRemaining) / totalDays) * 100
   );
 
-  /** ✅ FIX: membership check */
+  /** ✅ membership check */
   const isMember = leaderboard.some(
-    (member) => member.userId === user?.id
+    (member: any) => member.userId === user?.id
   );
-
-  const difficultyDisplay =
-    challenge.difficultyFilter?.length > 0
-      ? challenge.difficultyFilter.join(", ")
-      : "Any";
 
   return (
     <Layout>
@@ -184,10 +139,10 @@ const ChallengePage: React.FC = () => {
               challenge.ownerId === user?.id && (
                 <Button
                   onClick={handleActivateChallenge}
-                  disabled={isActivating}
+                  disabled={activateMutation.isPending}
                   className="gap-2 gradient-primary"
                 >
-                  {isActivating ? (
+                  {activateMutation.isPending ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <PlayCircle className="h-4 w-4" />
@@ -201,10 +156,10 @@ const ChallengePage: React.FC = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleJoinChallenge}
-                disabled={isJoining}
+                disabled={joinMutation.isPending}
                 className="gap-2"
               >
-                {isJoining ? (
+                {joinMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Users className="h-4 w-4" />
@@ -243,7 +198,7 @@ const ChallengePage: React.FC = () => {
                 <CardTitle>Leaderboard</CardTitle>
               </CardHeader>
               <CardContent>
-                {leaderboard.map((m, i) => (
+                {leaderboard.map((m: any, i: number) => (
                   <div key={m.userId} className="border p-2 rounded mb-2">
                     #{i + 1} {m.userName || m.username}
                   </div>
