@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login"); // Redirect after logout
   };
 
   const mobileNavLinks = [
@@ -62,9 +62,7 @@ const Navbar: React.FC = () => {
           <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary">
             <Code2 className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="hidden text-lg sm:inline-block">
-            LeetCode Tracker
-          </span>
+          <span className="hidden text-lg sm:inline-block">LeetCode Tracker</span>
         </Link>
 
         {isAuthenticated && (
@@ -97,7 +95,7 @@ const Navbar: React.FC = () => {
         )}
 
         <div className="flex items-center gap-2">
-          {/* Mobile hamburger menu — visible only below md breakpoint */}
+          {/* Mobile hamburger menu */}
           {isAuthenticated && (
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <Button
@@ -147,26 +145,16 @@ const Navbar: React.FC = () => {
             </Sheet>
           )}
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-9 w-9"
-          >
-            {theme === "dark" ? (
-              <Sun className="h-4 w-4" />
-            ) : (
-              <Moon className="h-4 w-4" />
-            )}
+          {/* Theme toggle */}
+          <Button variant="ghost" size="icon" onClick={toggleTheme} className="h-9 w-9">
+            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
+          {/* Auth buttons / user avatar */}
           {isAuthenticated && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-9 w-9 rounded-full"
-                >
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                   <Avatar className="h-9 w-9">
                     <AvatarImage src={user.avatar} alt={user.name} />
                     <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
@@ -177,30 +165,25 @@ const Navbar: React.FC = () => {
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
                     <p className="font-medium">{user.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {user.email}
-                    </p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/settings" className="gap-2 cursor-pointer">
-                    <Settings className="h-4 w-4" />
-                    Settings
+                    <Settings className="h-4 w-4" /> Settings
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="gap-2 cursor-pointer">
-                    <User className="h-4 w-4" />
-                    Profile
+                    <User className="h-4 w-4" /> Profile
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="gap-2 cursor-pointer text-destructive"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Log out
+                  <LogOut className="h-4 w-4" /> Log out
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
