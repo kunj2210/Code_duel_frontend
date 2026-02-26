@@ -29,9 +29,7 @@ export interface ChallengeMember {
   userName: string;
   avatar?: string;
   status: 'completed' | 'failed' | 'pending';
-  streak: number;
-  totalPenalty: number;
-  dailyProgress: DailyProgress[];
+  joinedAt: string;
 }
 
 export interface DailyProgress {
