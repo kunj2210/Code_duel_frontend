@@ -3,9 +3,15 @@
 export interface User {
   id: string;
   name: string;
+  username?: string;
   email: string;
   avatar?: string;
   leetcodeUsername: string;
+  createdAt?: string;
+  // user may belong to multiple challenges; store full member records
+  memberships?: ChallengeMember[];
+  // challenges created/owned by this user
+  ownedChallenges?: Challenge[];
 }
 
 export interface Challenge {
@@ -143,4 +149,12 @@ export interface GamificationStats {
   totalAchievements: number;
   recentAchievements: Achievement[];
   nextAchievements: Achievement[];
+// LeetCode profile returned from the backend
+export interface LeetCodeProfile {
+  username: string;
+  streak: number;
+  totalActiveDays: number;
+  activeYears: number[];
+  // the calendar may come as a JSON string or object mapping dates to counts
+  submissionCalendar: string | Record<string, number>;
 }
