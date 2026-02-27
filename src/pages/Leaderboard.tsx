@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Layout from '@/components/layout/Layout';
 import LeaderboardTable from '@/components/leaderboard/LeaderboardTable';
 import { dashboardApi } from '@/lib/api';
-import { useAuth } from '@/contexts/src/pages/src/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { LeaderboardEntry } from '@/types';
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import React, { useState, useEffect } from "react";
 import {
   Settings as SettingsIcon,
   Key,
@@ -36,7 +35,6 @@ const Settings: React.FC = () => {
   const [sessionStatus, setSessionStatus] = useState<SessionStatus | null>(null);
   const [showErrors, setShowErrors] = useState(false);
   const delayedNavigate = useDelayedNavigate();
-  const [sessionStatus, setSessionStatus] = useState<any>(null);
 
   // LeetCode Session State
   const [leetcodeSession, setLeetcodeSession] = useState({
@@ -86,8 +84,7 @@ const Settings: React.FC = () => {
         delayedNavigate(-1);
       }
     } catch (error: unknown) {
-    } catch (error: any) {
-      if (error.message === "Network Error") {
+      if (error instanceof Error && error.message === "Network Error") {
         console.warn("Backend not found. Using mock session save for UI preview.");
         toast({
           title: "LeetCode Session Saved (Mock)",
@@ -132,7 +129,6 @@ const Settings: React.FC = () => {
   }, [toast]);
 
   const handleUpdateProfile = useCallback(async () => {
-  const handleUpdateProfile = async () => {
     if (!leetcodeUsername) {
       setShowErrors(true);
       return;
@@ -155,8 +151,7 @@ const Settings: React.FC = () => {
         delayedNavigate(-1);
       }
     } catch (error: unknown) {
-    } catch (error: any) {
-      if (error.message === "Network Error") {
+      if (error instanceof Error && error.message === "Network Error") {
         console.warn("Backend not found. Using mock profile update for UI preview.");
         toast({
           title: "Profile Updated (Mock)",

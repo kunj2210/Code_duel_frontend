@@ -57,43 +57,25 @@ export default function CodeEditor() {
     // Ctrl + Enter → Run
     editor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
-
-      () => handleRunCode()
-
       () => {
         handleRunCode();
       }
-
     );
 
     // Ctrl + S → Save
     editor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
-
-      () => handleSaveCode()
-
       () => {
         handleSaveCode();
       }
-
     );
 
     // Ctrl + Shift + F → Format
     editor.addCommand(
-      monaco.KeyMod.CtrlCmd |
-
-        monaco.KeyMod.Shift |
-        monaco.KeyCode.KeyF,
-
-      () => editor.getAction("editor.action.formatDocument").run()
-
-      monaco.KeyMod.Shift |
-      monaco.KeyCode.KeyF,
-
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
       () => {
         editor.getAction("editor.action.formatDocument").run();
       }
-
     );
   };
 
@@ -157,8 +139,6 @@ export default function CodeEditor() {
           value={code}
 
           theme={theme}
-
-          theme="vs-dark"
 
           onChange={(value) => setCode(value || "")}
           onMount={handleEditorDidMount}
