@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Flame, Target, DollarSign, Zap, Trophy, Plus } from "lucide-react";
+import { Flame, Target, DollarSign, Zap, Trophy, Plus, Award } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout/Layout";
@@ -12,7 +12,18 @@ import EmptyState from "@/components/common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
 import { dashboardApi, challengeApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Stats } from "@/types";
+import { Stats, Achievement, UserTierProgress } from "@/types";
+import {
+  TierBadge,
+  RecentAchievements,
+  NextAchievements,
+  ProgressToTier,
+} from "@/components/gamification";
+import {
+  mockAchievements,
+  calculateUserTierProgress,
+  mockUserPoints,
+} from "@/data/mockData";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -31,6 +42,10 @@ const Dashboard: React.FC = () => {
   const [challenges, setChallenges] = useState<any[]>([]);
   const [activityData, setActivityData] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [achievements] = useState<Achievement[]>(mockAchievements);
+  const [tierProgress] = useState<UserTierProgress>(
+    calculateUserTierProgress(mockUserPoints)
+  );
 
   useEffect(() => {
     loadDashboardData();
@@ -109,10 +124,13 @@ const Dashboard: React.FC = () => {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">
-              Welcome back,{" "}
-              <span className="gradient-text">{user?.name || "Developer"}</span>
-            </h1>
+            <div className="flex items-center gap-3 mb-1">
+              <h1 className="text-3xl font-bold">
+                Welcome back,{" "}
+                <span className="gradient-text">{user?.name || "Developer"}</span>
+              </h1>
+              <TierBadge tier={tierProgress.currentTier} size="md" />
+            </div>
             <p className="text-muted-foreground mt-1">
               Track your daily coding progress and stay consistent
             </p>
@@ -178,6 +196,23 @@ const Dashboard: React.FC = () => {
         {/* Activity Heatmap */}
         <ActivityHeatmap data={activityData} title="Contribution Graph" />
 
+        {/* Gamification Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Tier Progress */}
+          <div className="lg:col-span-1">
+            <ProgressToTier tierProgress={tierProgress} showDetails={false} />
+          </div>
+
+          {/* Recent and Next Achievements */}
+          <div className="lg:col-span-1">
+            <RecentAchievements achievements={achievements} maxItems={3} />
+          </div>
+
+          <div className="lg:col-span-1">
+            <NextAchievements achievements={achievements} maxItems={3} />
+          </div>
+        </div>
+
         {/* Active Challenges */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -200,7 +235,7 @@ const Dashboard: React.FC = () => {
               description="Create or join a challenge to start competing with others and stay motivated!"
               action={{
                 label: "Create Challenge",
-                onClick: () => {},
+                onClick: () => { },
               }}
             />
           )}
