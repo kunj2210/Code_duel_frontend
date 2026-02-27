@@ -4,66 +4,35 @@ import {
   ArrowLeft,
   Calendar,
   Target,
-  DollarSign,
   Users,
   Clock,
   Loader2,
   PlayCircle,
   UserPlus,
 } from "lucide-react";
-
-
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
-import { Progress } from "../components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import Layout from "../components/layout/Layout";
-import ProgressChart from "../components/dashboard/ProgressChart";
-import { mockChartData } from "../data/mockData";
-import { cn } from "../lib/utils";
-
-import { useToast } from "../hooks/use-toast";
-import { useAuth } from "../contexts/AuthContext";
-import { challengeApi } from "../lib/challengeApi";
-import { dashboardApi } from "../lib/dashboardApi";
-const difficultyColors: Record<string, string> = {
-  easy: "bg-green-500/10 text-green-600 border-green-500/20",
-  medium: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
-  hard: "bg-red-500/10 text-red-600 border-red-500/20",
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Layout from "@/components/layout/Layout";
-import MembersList from "@/components/challenge/MembersList";
-import InviteUserDialog from "@/components/challenge/InviteUserDialog";
 import ProgressChart from "@/components/dashboard/ProgressChart";
-import { cn } from "@/lib/utils";
-import { challengeApi, dashboardApi } from "@/lib/api";
+import InviteUserDialog from "@/components/challenge/InviteUserDialog";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Challenge } from "@/types";
-
-const difficultyColors = {
-  easy: "bg-success/10 text-success border-success/20",
-  medium: "bg-warning/10 text-warning border-warning/20",
-  hard: "bg-destructive/10 text-destructive border-destructive/20",
-
-  any: "bg-primary/10 text-primary border-primary/20",
-};
+import { challengeApi, dashboardApi } from "@/lib/api";
 
 const ChallengePage: React.FC = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const { toast } = useToast();
   const { user } = useAuth();
 
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [leaderboard, setLeaderboard] = useState<{ userId: string; userName?: string; username?: string; totalPenalty?: number }[]>([]);
+  const [chartData, setChartData] = useState<{ date: string; solved: number; target: number }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -79,15 +48,9 @@ const ChallengePage: React.FC = () => {
 
     setIsLoading(true);
     try {
-
       const challengeResponse = await challengeApi.getById(id);
-      const leaderboardResponse =
-        await dashboardApi.getChallengeLeaderboard(id);
-
-      const challengeResponse = await challengeApi.getById(id!);
-      const leaderboardResponse = await dashboardApi.getChallengeLeaderboard(id!);
-      const progressResponse = await dashboardApi.getChallengeProgress(id!);
-
+      const leaderboardResponse = await dashboardApi.getChallengeLeaderboard(id);
+      const progressResponse = await dashboardApi.getChallengeProgress(id);
 
       if (challengeResponse?.success && challengeResponse.data) {
         setChallenge(challengeResponse.data);
@@ -97,13 +60,12 @@ const ChallengePage: React.FC = () => {
         setLeaderboard(leaderboardResponse.data);
       }
 
-
-      if (progressResponse.success && progressResponse.data) {
+      if (progressResponse?.success && progressResponse.data) {
         setChartData(progressResponse.data);
       }
-
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to load challenge:", error);
+      setHasError(true);
       toast({
         title: "Failed to load challenge",
         description: "Please try again.",
@@ -130,13 +92,11 @@ const ChallengePage: React.FC = () => {
       } else {
         throw new Error(response?.message || "Failed to join challenge");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { data?: { message?: string } } };
       toast({
         title: "Failed to join challenge",
-        description:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Please try again.",
+        description: err.response?.data?.message || err.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -154,20 +114,17 @@ const ChallengePage: React.FC = () => {
       if (response?.success) {
         toast({
           title: "Challenge activated!",
-          description:
-            "Your challenge is now active and visible to all members.",
+          description: "Your challenge is now active and visible to all members.",
         });
         loadChallengeData();
       } else {
         throw new Error(response?.message || "Failed to activate challenge");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { message?: string; response?: { data?: { message?: string } } };
       toast({
         title: "Failed to activate challenge",
-        description:
-          error?.response?.data?.message ||
-          error?.message ||
-          "Please try again.",
+        description: err.response?.data?.message || err.message || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -185,16 +142,20 @@ const ChallengePage: React.FC = () => {
     );
   }
 
-  if (!challenge) {
+  if (hasError || !challenge) {
     return (
       <Layout>
         <div className="text-center py-12">
+          <Target className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-bold">Challenge not found</h2>
+          <p className="text-muted-foreground mt-2">We couldn't load this challenge.</p>
+          <Button asChild className="mt-4">
+            <Link to="/dashboard">Go to Dashboard</Link>
+          </Button>
         </div>
       </Layout>
     );
   }
-
 
   const daysRemaining = Math.max(
     0,
@@ -216,23 +177,10 @@ const ChallengePage: React.FC = () => {
   const progress = Math.min(
     100,
     Math.max(0, Math.round(((totalDays - daysRemaining) / totalDays) * 100))
-
-  const daysRemaining = Math.max(0, Math.ceil(
-    (new Date(challenge.endDate).getTime() - new Date().getTime()) /
-    (1000 * 60 * 60 * 24)
-  ));
-
-  const totalDays = Math.max(1, Math.ceil(
-    (new Date(challenge.endDate).getTime() -
-      new Date(challenge.startDate).getTime()) /
-    (1000 * 60 * 60 * 24)
-  ));
-
-  const progress = Math.min(100, Math.max(0, Math.round(((totalDays - daysRemaining) / totalDays) * 100)));
+  );
 
   const isMember = leaderboard.some(
     (member) => member.userId === user?.id
-
   );
 
   const difficultyDisplay =
@@ -244,7 +192,7 @@ const ChallengePage: React.FC = () => {
     <Layout>
       <div className="space-y-6">
         <Button variant="ghost" size="sm" asChild className="gap-2">
-          <Link to="/">
+          <Link to="/dashboard">
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
@@ -282,7 +230,7 @@ const ChallengePage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {challenge.status === "PENDING" &&
               challenge.ownerId === user?.id && (
                 <Button
@@ -310,29 +258,13 @@ const ChallengePage: React.FC = () => {
               </Button>
             )}
 
-
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-              onClick={handleJoinChallenge}
-              disabled={isJoining}
-            >
-              {isJoining ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Users className="h-4 w-4" />
-              )}
-              Join Challenge
-            </Button>
-
             {!isMember && challenge.visibility !== "PRIVATE" ? (
               <Button
                 variant="outline"
                 size="sm"
+                className="gap-2"
                 onClick={handleJoinChallenge}
                 disabled={isJoining}
-                className="gap-2"
               >
                 {isJoining ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -341,7 +273,7 @@ const ChallengePage: React.FC = () => {
                 )}
                 Join Challenge
               </Button>
-            ) : (
+            ) : !isMember && (
               <Badge
                 variant="outline"
                 className="bg-success/10 text-success"
@@ -349,21 +281,11 @@ const ChallengePage: React.FC = () => {
                 Already Joined
               </Badge>
             )}
-
           </div>
         </div>
 
         <Card>
           <CardContent className="p-4">
-
-            <div className="flex justify-between mb-2">
-              <span>Challenge Progress</span>
-              <span>
-                {totalDays - daysRemaining} of {totalDays} days
-              </span>
-            </div>
-            <Progress value={progress} />
-
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Challenge Progress</span>
               <span className="text-sm text-muted-foreground">
@@ -371,7 +293,6 @@ const ChallengePage: React.FC = () => {
               </span>
             </div>
             <Progress value={progress} className="h-3" />
-
           </CardContent>
         </Card>
 
@@ -390,7 +311,7 @@ const ChallengePage: React.FC = () => {
                 {leaderboard.length > 0 ? (
                   leaderboard.map((member, index) => (
                     <div
-                      key={member.userId}
+                      key={member.userId || `member-${index}`}
                       className="flex justify-between p-3 border rounded-lg mb-2"
                     >
                       <span>#{index + 1}</span>
@@ -412,19 +333,12 @@ const ChallengePage: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="progress">
-
-            <ProgressChart
-              data={mockChartData}
-              title="Team Progress"
-            />
-
             <ProgressChart data={chartData} title="Team Progress" />
-
           </TabsContent>
         </Tabs>
       </div>
 
-      {/* Invite Users Dialog — open prop guards access; always mounted to avoid async teardown issues */}
+      {/* Invite Users Dialog */}
       <InviteUserDialog
         open={
           challenge.visibility === "PRIVATE" &&
@@ -434,7 +348,7 @@ const ChallengePage: React.FC = () => {
         onOpenChange={setIsInviteDialogOpen}
         challengeId={challenge.id}
         challengeName={challenge.name}
-        existingMemberIds={leaderboard.map((m) => m.userId || m.id)}
+        existingMemberIds={leaderboard.map((m) => m.userId)}
       />
     </Layout>
   );

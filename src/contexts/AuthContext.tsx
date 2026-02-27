@@ -101,10 +101,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     loadUser();
   }, []);
 
-  const login = async (emailOrUsername: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await authApi.login(emailOrUsername, password);
+      const response = await authApi.login(email, password);
 
       if (response.success && response.data) {
         const { user: userData, token } = response.data;
@@ -116,23 +116,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } else {
         throw new Error(response.message || "Login failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Allow mock login in development if backend is not found
-      if (error.message === "Network Error") {
+      const err = error as { message?: string };
+      if (err.message === "Network Error") {
         console.warn("Backend not found. Using mock login for UI preview.");
         const mockUser: User = {
           id: 'mock-id',
-          name: emailOrUsername.split('@')[0],
-          email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@example.com`,
-          leetcodeUsername: emailOrUsername.split('@')[0],
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${emailOrUsername}`,
+          name: email.split('@')[0] || email,
+          email: email.includes('@') ? email : `${email}@example.com`,
+          leetcodeUsername: email.split('@')[0] || email,
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${email}`,
         };
         localStorage.setItem("auth_token", "mock-token");
         localStorage.setItem("user", JSON.stringify(mockUser));
         setUser(mockUser);
         return;
       }
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Login failed";
+      const errMsg = error as { response?: { data?: { message?: string; error?: string } } };
+      const errorMessage = errMsg.response?.data?.message || errMsg.response?.data?.error || (error as Error).message || "Login failed";
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
@@ -147,12 +149,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setIsLoading(true);
     try {
-      const response = await authApi.register(
-        email,
-        username,
-        password,
-        leetcodeUsername
-      );
+      const response = await authApi.register(email, username, password, leetcodeUsername);
 
       if (response.success && response.data) {
         const { user: userData, token } = response.data;
@@ -164,9 +161,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } else {
         throw new Error(response.message || "Registration failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Allow mock registration in development if backend is not found
-      if (error.message === "Network Error") {
+      const err = error as { message?: string };
+      if (err.message === "Network Error") {
         console.warn("Backend not found. Using mock registration for UI preview.");
         const mockUser: User = {
           id: 'mock-id',
@@ -180,7 +178,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(mockUser);
         return;
       }
-      const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || "Registration failed";
+      const errMsg = error as { response?: { data?: { message?: string; error?: string } } };
+      const errorMessage = errMsg.response?.data?.message || errMsg.response?.data?.error || (error as Error).message || "Registration failed";
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);

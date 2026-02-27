@@ -97,3 +97,34 @@ export interface LeetCodeProfile {
   // the calendar may come as a JSON string or object mapping dates to counts
   submissionCalendar: string | Record<string, number>;
 }
+
+export interface ChallengeInvite {
+  id: string;
+  challengeId: string;
+  challengeName: string;
+  inviterId: string;
+  inviterName: string;
+  inviteeId: string;
+  inviteeName: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}
+
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface DashboardResponse {
+  summary: {
+    totalChallenges: number;
+    activeChallenges: number;
+    completedChallenges: number;
+    totalPenalties: number;
+  };
+  activeChallenges: Challenge[];
+  recentActivity: ActivityData[];
+}

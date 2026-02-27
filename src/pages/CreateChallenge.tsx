@@ -99,9 +99,9 @@ const CreateChallenge: React.FC = () => {
       // Map difficulty to difficultyFilter array
       const difficultyFilter: string[] = [];
       if (difficulty === "easy") {
-        difficultyFilter.push("Easy", "Medium", "Hard");
+        difficultyFilter.push("Easy");
       } else if (difficulty === "medium") {
-        difficultyFilter.push("Medium", "Hard");
+        difficultyFilter.push("Medium");
       } else if (difficulty === "hard") {
         difficultyFilter.push("Hard");
       }
@@ -224,8 +224,8 @@ const CreateChallenge: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Difficulty</SelectItem>
-                      <SelectItem value="easy">Easy or Higher</SelectItem>
-                      <SelectItem value="medium">Medium or Higher</SelectItem>
+                      <SelectItem value="easy">Easy Only</SelectItem>
+                      <SelectItem value="medium">Medium Only</SelectItem>
                       <SelectItem value="hard">Hard Only</SelectItem>
                     </SelectContent>
                   </Select>

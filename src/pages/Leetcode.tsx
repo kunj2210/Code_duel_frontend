@@ -1,10 +1,6 @@
 import Layout from "@/components/layout/Layout";
-
-import { useAuth } from "@/contexts/src/pages/src/AuthContext";
-
-import { User, Database, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-
+import { User as UserIcon, Database, AlertCircle, Settings, Activity } from "lucide-react";
 import { authApi, leetcodeApi } from "@/lib/api";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { User, LeetCodeProfile } from "@/types";
@@ -13,7 +9,6 @@ import EmptyState from "@/components/common/EmptyState";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useNavigate } from "react-router-dom";
-import { Settings, Database, Activity } from "lucide-react";
 import { getErrorMessage } from "@/lib/utils";
 
 const Leetcode = () => {
@@ -106,12 +101,10 @@ const Leetcode = () => {
         {!user?.leetcodeUsername && (
           <EmptyState
             icon={Settings}
-            icon={User}
             title="No LeetCode username"
             description="Set your LeetCode username in settings to fetch profile data."
             action={{
               label: "Go to Settings",
-              onClick: () => { navigate('/settings') },
               onClick: () => {
                 navigate("/settings");
               },
@@ -125,11 +118,6 @@ const Leetcode = () => {
             title="No profile data"
             description="Make sure you've stored a LeetCode session in the backend."
             action={{ label: "Go to Settings", onClick: () => { navigate('/settings') } }}
-
-            action={{
-              label: "Go to Settings",
-              onClick: () => { navigate('/settings') }
-            }}
           />
         )}
 

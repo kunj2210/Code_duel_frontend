@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { ErrorMessage } from '@/components/ui/error-message';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/src/pages/src/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ValidatedInput } from '@/components/common/ValidatedInput';
 import { useDelayedNavigate } from '@/hooks/use-delayed-navigate';

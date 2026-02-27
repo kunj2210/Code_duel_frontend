@@ -30,7 +30,7 @@ import {
   SheetClose,
 } from "@/components/ui/sheet";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/src/pages/src/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();

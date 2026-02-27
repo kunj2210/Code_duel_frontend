@@ -4,7 +4,7 @@ import { Code2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { useAuth } from '@/contexts/src/pages/src/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ValidatedInput } from '@/components/common/ValidatedInput';
 import { useDelayedNavigate } from '@/hooks/use-delayed-navigate';

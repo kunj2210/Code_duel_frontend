@@ -1,6 +1,4 @@
 import axios, { AxiosInstance, AxiosError } from "axios";
-import { User, LeetCodeProfile, ActivityData, ChartData, LeaderboardEntry, Challenge } from "@/types";
-
 import type {
   User,
   Challenge,
@@ -9,6 +7,9 @@ import type {
   ChartData,
   ChallengeInvite,
   UserSearchResult,
+  DashboardResponse,
+  LeaderboardEntry,
+  LeetCodeProfile,
 } from "@/types";
 
 // API Base URL - Change this to your backend URL
@@ -97,21 +98,6 @@ export interface ChallengeResponse {
   members?: LeaderboardMember[];
 }
 
-export interface DashboardResponse {
-export interface RegisterResponse extends LoginResponse { }
-
-  summary: {
-    totalChallenges: number;
-    activeChallenges: number;
-    completedChallenges: number;
-    totalPenalties: number;
-  };
-  activeChallenges: unknown[];
-  recentActivity: unknown[];
-  activeChallenges: Challenge[];
-  recentActivity: any[];
-}
-
 export interface TodayStatusResponse {
   date: string;
   challenges: unknown[];
@@ -135,11 +121,9 @@ export interface SessionStatus {
   expiresAt: string;
 }
 
-// moved to src/types/index.ts
-
 // ============================================================================
 // AUTH APIs
-// ============================================================================// API implementations
+// ============================================================================
 export const authApi = {
   login: async (emailOrUsername: string, password: string) => {
     const response = await api.post<ApiResponse<LoginResponse>>(
@@ -238,15 +222,8 @@ export const challengeApi = {
 
 // ============================================================================
 // INVITE APIs
-// NOTE: These endpoints are pending backend implementation.
-// Backend spec (challenge.routes.js) does not yet include invite routes.
-// The UI is ready; calls will gracefully fail (try/catch) until the backend
-// adds: POST /api/challenges/:id/invite, GET /api/invites,
-//        POST /api/challenges/:id/invite/accept|reject
-//        GET  /api/users/search
 // ============================================================================
 export const inviteApi = {
-  // POST /api/challenge/:id/invite
   sendInvite: async (challengeId: string, userId: string) => {
     const response = await api.post<ApiResponse<ChallengeInvite>>(
       `/api/challenge/${challengeId}/invite`,
@@ -260,7 +237,6 @@ export const inviteApi = {
     return response.data;
   },
 
-  // POST /api/challenge/:id/invite/accept
   acceptInvite: async (challengeId: string) => {
     const response = await api.post<ApiResponse<ChallengeInvite>>(
       `/api/challenge/${challengeId}/invite/accept`
@@ -268,7 +244,6 @@ export const inviteApi = {
     return response.data;
   },
 
-  // POST /api/challenge/:id/invite/reject
   rejectInvite: async (challengeId: string) => {
     const response = await api.post<ApiResponse<ChallengeInvite>>(
       `/api/challenge/${challengeId}/invite/reject`
@@ -309,8 +284,7 @@ export const dashboardApi = {
   },
 
   getChallengeProgress: async (challengeId: string) => {
-    // backend returns a simple object with progress percentages for users
-    const response = await api.get<ApiResponse<Record<string, unknown>>>(
+    const response = await api.get<ApiResponse<ChartData[]>>(
       `/api/dashboard/challenge/${challengeId}`
     );
     return response.data;
@@ -343,7 +317,7 @@ export const dashboardApi = {
   },
 
   getGlobalLeaderboard: async () => {
-    const response = await api.get<ApiResponse<any[]>>(
+    const response = await api.get<ApiResponse<LeaderboardEntry[]>>(
       "/api/dashboard/leaderboard"
     );
     return response.data;
