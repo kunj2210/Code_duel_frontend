@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ErrorMessage } from "@/components/ui/error-message";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -24,6 +25,7 @@ import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { challengeApi } from "@/lib/api";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getErrorMessage } from "@/lib/utils";
 import DOMPurify from "dompurify";
 
 const getTodayString = () => {
@@ -97,9 +99,9 @@ const CreateChallenge: React.FC = () => {
       // Map difficulty to difficultyFilter array
       const difficultyFilter: string[] = [];
       if (difficulty === "easy") {
-        difficultyFilter.push("Easy", "Medium", "Hard");
+        difficultyFilter.push("Easy");
       } else if (difficulty === "medium") {
-        difficultyFilter.push("Medium", "Hard");
+        difficultyFilter.push("Medium");
       } else if (difficulty === "hard") {
         difficultyFilter.push("Hard");
       }
@@ -127,9 +129,10 @@ const CreateChallenge: React.FC = () => {
       } else {
         throw new Error(response.message || "Failed to create challenge");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to create challenge",
+        description: getErrorMessage(error),
         description: DOMPurify.sanitize(
           error.response?.data?.message || error.message || "Please try again."
         ),
@@ -170,15 +173,13 @@ const CreateChallenge: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Challenge Name</Label>
                 <Input
-                  id="name"
+                id="name"
                   placeholder="e.g., January Grind, Hard Mode Warriors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={errors.name ? "border-destructive" : ""}
                 />
-                {errors.name && (
-                  <p className="text-xs text-destructive">{errors.name}</p>
-                )}
+                <ErrorMessage message={errors.name} />
               </div>
 
               <div className="space-y-2">
@@ -214,6 +215,7 @@ const CreateChallenge: React.FC = () => {
                   </p>
                 </div>
 
+                    
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Minimum Difficulty</Label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
@@ -222,8 +224,8 @@ const CreateChallenge: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="any">Any Difficulty</SelectItem>
-                      <SelectItem value="easy">Easy or Higher</SelectItem>
-                      <SelectItem value="medium">Medium or Higher</SelectItem>
+                      <SelectItem value="easy">Easy Only</SelectItem>
+                      <SelectItem value="medium">Medium Only</SelectItem>
                       <SelectItem value="hard">Hard Only</SelectItem>
                     </SelectContent>
                   </Select>
@@ -257,9 +259,8 @@ const CreateChallenge: React.FC = () => {
                   <Input
                     id="startDate"
                     type="date"
-                    min={getTodayString()}
-                    value={startDate}
                     min={today}
+                    value={startDate}
                     onChange={(e) => {
                       const newStartDate = e.target.value;
                       setStartDate(newStartDate);
@@ -285,9 +286,8 @@ const CreateChallenge: React.FC = () => {
                   <Input
                     id="endDate"
                     type="date"
-                    min={startDate || getTodayString()}
-                    value={endDate}
                     min={minEndDate}
+                    value={endDate}
                     disabled={!startDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className={errors.endDate ? "border-destructive" : ""}
@@ -329,7 +329,11 @@ const CreateChallenge: React.FC = () => {
                 <Button
                   type="submit"
                   className="flex-1 gradient-primary"
-                  disabled={isLoading}
+                  disabled={
+                    isLoading ||
+                    Object.keys(errors).length > 0 ||
+                    !name || !dailyTarget || !penaltyAmount || !startDate || !endDate
+                  }
                 >
                   {isLoading ? (
                     <>

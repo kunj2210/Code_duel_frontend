@@ -8,11 +8,12 @@ import TodayStatus from "@/components/dashboard/TodayStatus";
 import ProgressChart from "@/components/dashboard/ProgressChart";
 import ActivityHeatmap from "@/components/dashboard/ActivityHeatmap";
 import ChallengeCard from "@/components/dashboard/ChallengeCard";
+import InviteRequests from "@/components/dashboard/InviteRequests";
 import EmptyState from "@/components/common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardApi, challengeApi } from "@/lib/api";
+import { dashboardApi, challengeApi, TodayStatusResponse, DashboardResponse, ApiResponse, DashboardStats } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Stats } from "@/types";
+import { Stats, ActivityData, ChartData, Challenge } from "@/types";
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -28,15 +29,11 @@ const Dashboard: React.FC = () => {
     activeChallenges: 0,
     totalSolved: 0,
   });
-  const [challenges, setChallenges] = useState<any[]>([]);
-  const [activityData, setActivityData] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = React.useCallback(async () => {
     setIsLoading(true);
     try {
       // Load all dashboard data in parallel
@@ -79,17 +76,18 @@ const Dashboard: React.FC = () => {
 
       // Update activity heatmap
       if (activityResponse.success && activityResponse.data) {
-        setActivityData(activityResponse.data);
+        setActivityData(activityResponse.data as ActivityData[]);
       }
 
       // Update chart data
       if (chartResponse.success && chartResponse.data) {
-        setChartData(chartResponse.data);
+        setChartData(chartResponse.data as ChartData[]);
       }
 
       // Update challenges list
       if (challengesResponse.success && challengesResponse.data) {
-        setChallenges(challengesResponse.data);
+        // the backend shape is largely compatible with our Challenge type
+        setChallenges(challengesResponse.data as Challenge[]);
       }
     } catch (error: unknown) {
       console.error("Failed to load dashboard:", error);
@@ -101,10 +99,14 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   return (
-    <Layout>
+  <Layout>
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -143,6 +145,7 @@ const Dashboard: React.FC = () => {
             icon={Target}
             variant="primary"
           />
+
           <StatsCard
             title="Active Challenges"
             value={stats.activeChallenges}
@@ -158,6 +161,9 @@ const Dashboard: React.FC = () => {
             variant="destructive"
           />
         </div>
+
+        {/* Invite Requests */}
+        <InviteRequests />
 
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -187,6 +193,7 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
 
+
           {challenges.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {challenges.slice(0, 3).map((challenge) => (
@@ -200,7 +207,7 @@ const Dashboard: React.FC = () => {
               description="Create or join a challenge to start competing with others and stay motivated!"
               action={{
                 label: "Create Challenge",
-                onClick: () => {},
+                onClick: () => { },
               }}
             />
           )}

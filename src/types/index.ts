@@ -3,9 +3,15 @@
 export interface User {
   id: string;
   name: string;
+  username?: string;
   email: string;
   avatar?: string;
   leetcodeUsername: string;
+  createdAt?: string;
+  // user may belong to multiple challenges; store full member records
+  memberships?: ChallengeMember[];
+  // challenges created/owned by this user
+  ownedChallenges?: Challenge[];
 }
 
 export interface Challenge {
@@ -13,12 +19,15 @@ export interface Challenge {
   name: string;
   dailyTarget: number;
   difficulty: 'easy' | 'medium' | 'hard' | 'any';
-  penaltyAmount: number;
+  penaltyAmount?: number;
   startDate: string;
   endDate: string;
   createdBy: string;
   members: ChallengeMember[];
   isActive: boolean;
+  difficultyFilter?: string[];
+  status?: "ACTIVE" | "PENDING" | "COMPLETED" | "CANCELLED";
+  minSubmissionsPerDay?: number;
 }
 
 export interface ChallengeMember {
@@ -26,9 +35,7 @@ export interface ChallengeMember {
   userName: string;
   avatar?: string;
   status: 'completed' | 'failed' | 'pending';
-  streak: number;
-  totalPenalty: number;
-  dailyProgress: DailyProgress[];
+  joinedAt: string;
 }
 
 export interface DailyProgress {
@@ -80,3 +87,44 @@ export type RawData = {
   target?: number;
   dailyTarget?: number;
 };
+
+// LeetCode profile returned from the backend
+export interface LeetCodeProfile {
+  username: string;
+  streak: number;
+  totalActiveDays: number;
+  activeYears: number[];
+  // the calendar may come as a JSON string or object mapping dates to counts
+  submissionCalendar: string | Record<string, number>;
+}
+
+export interface ChallengeInvite {
+  id: string;
+  challengeId: string;
+  challengeName: string;
+  inviterId: string;
+  inviterName: string;
+  inviteeId: string;
+  inviteeName: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  createdAt: string;
+}
+
+export interface UserSearchResult {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  avatar?: string;
+}
+
+export interface DashboardResponse {
+  summary: {
+    totalChallenges: number;
+    activeChallenges: number;
+    completedChallenges: number;
+    totalPenalties: number;
+  };
+  activeChallenges: Challenge[];
+  recentActivity: ActivityData[];
+}
