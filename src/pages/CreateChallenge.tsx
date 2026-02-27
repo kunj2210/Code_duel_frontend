@@ -24,6 +24,12 @@ import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { challengeApi } from "@/lib/api";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import DOMPurify from "dompurify";
+
+const getTodayString = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+};
 
 const CreateChallenge: React.FC = () => {
   const [name, setName] = useState("");
@@ -62,10 +68,14 @@ const CreateChallenge: React.FC = () => {
 
     if (!startDate) {
       newErrors.startDate = "Start date is required";
+    } else if (startDate < getTodayString()) {
+      newErrors.startDate = "Start date cannot be in the past";
     }
 
     if (!endDate) {
       newErrors.endDate = "End date is required";
+    } else if (endDate < getTodayString()) {
+      newErrors.endDate = "End date cannot be in the past";
     }
 
     if (startDate && endDate && new Date(startDate) >= new Date(endDate)) {
@@ -105,7 +115,7 @@ const CreateChallenge: React.FC = () => {
         penaltyAmount: parseInt(penaltyAmount),
         startDate: new Date(startDate).toISOString(),
         endDate: new Date(endDate).toISOString(),
-        visibility : visibility as "PUBLIC" | "PRIVATE",
+        visibility: visibility as "PUBLIC" | "PRIVATE",
       });
 
       if (response.success) {
@@ -120,8 +130,9 @@ const CreateChallenge: React.FC = () => {
     } catch (error: any) {
       toast({
         title: "Failed to create challenge",
-        description:
-          error.response?.data?.message || error.message || "Please try again.",
+        description: DOMPurify.sanitize(
+          error.response?.data?.message || error.message || "Please try again."
+        ),
         variant: "destructive",
       });
     } finally {
@@ -246,8 +257,8 @@ const CreateChallenge: React.FC = () => {
                   <Input
                     id="startDate"
                     type="date"
-                    value={startDate}
                     min={today}
+                    value={startDate}
                     onChange={(e) => {
                       const newStartDate = e.target.value;
                       setStartDate(newStartDate);
@@ -273,8 +284,8 @@ const CreateChallenge: React.FC = () => {
                   <Input
                     id="endDate"
                     type="date"
-                    value={endDate}
                     min={minEndDate}
+                    value={endDate}
                     disabled={!startDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className={errors.endDate ? "border-destructive" : ""}
@@ -302,7 +313,7 @@ const CreateChallenge: React.FC = () => {
                   Public challenges are visible to all users. Private challenges are only visible to the owner and invited members.
                 </p>
               </div>
-             
+
 
               <div className="flex gap-3 pt-4">
                 <Button

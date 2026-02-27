@@ -1,2 +1,83 @@
+# LeetCode Tracker - Code Duel Frontend
+
+A sleek, modern web application designed to help developers stay consistent with their LeetCode practice. Compete with friends, track your daily progress, and stay accountable through a structured challenge system.
+
+## 🚀 Overview
+LeetCode Tracker is a full-stack platform where users can join or create coding challenges. The system monitors your LeetCode submissions and evaluates your daily performance based on pre-defined targets.
+
+### Key Features
+- **Mobile-Responsive Design**: Fully accessible on all devices with a dedicated mobile navigation drawer.
+- **Challenge Management**: Create challenges with custom rules, daily targets, and penalty systems.
+- **Leaderboards**: Real-time rankings to stay competitive with peers.
+- **Activity Heatmaps**: Visual representation of your coding consistency.
+- **Dark Mode**: Eye-friendly interface with dynamic theme switching.
+
+## 🛠️ Tech Stack
+| Category | Technology |
+| :--- | :--- |
+| **Frontend Framework** | [React 18](https://reactjs.org/) |
+| **Build Tool** | [Vite](https://vitejs.dev/) |
+| **Language** | [TypeScript](https://www.typescriptlang.org/) |
+| **Styling** | [Tailwind CSS](https://tailwindcss.com/) |
+| **UI Components** | [shadcn/ui](https://ui.shadcn.com/) |
+| **Icons** | [Lucide React](https://lucide.dev/) |
+| **Date Handling** | [date-fns](https://date-fns.org/) |
+| **API Client** | [Axios](https://axios-http.com/) |
+
+## 📦 Getting Started
+
+### Prerequisites
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [npm](https://www.npmjs.com/) or [pnpm](https://pnpm.io/)
+
+### Installation
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/HeerGhevariya/Code_duel_frontend.git
+   cd Code_duel_frontend
+   ```
+2. **Install dependencies**:
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
+
+### Environment Configuration
+Create a `.env` file in the root directory and add the following:
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+### Running Locally
+To start the development server:
+```bash
+npm run dev
+```
+The app will be available at `http://localhost:8080`.
+
+## 📂 Folder Structure
+```text
+src/
+├── components/     # Reusable UI components (shadcn/ui + custom)
+│   ├── layout/     # Page layouts and navigation
+│   └── ui/         # Base UI primitives
+├── contexts/       # React Contexts for global state (Auth, Theme)
+├── hooks/          # Custom React hooks
+├── lib/            # Utility libraries and API configuration
+├── pages/          # Full page components
+└── types/          # TypeScript definitions
+```
+
+## 🤝 Contribution Workflow
+1. Fork the Project.
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your Changes (`git commit -m 'feat: add AmazingFeature'`).
+4. Push to the Branch (`git checkout origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+## 📄 License
+Distributed under the ISC License. See `LICENSE` for more information.
+
 
 
