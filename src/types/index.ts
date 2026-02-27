@@ -17,12 +17,15 @@ export interface User {
 export interface Challenge {
   id: string;
   name: string;
+  description?: string;
   dailyTarget: number;
   difficulty: 'easy' | 'medium' | 'hard' | 'any';
   penaltyAmount?: number;
   startDate: string;
   endDate: string;
   createdBy: string;
+  ownerId?: string;
+  visibility?: string;
   members: ChallengeMember[];
   isActive: boolean;
   difficultyFilter?: string[];
@@ -104,6 +107,7 @@ export interface ChallengeInvite {
   challengeName: string;
   inviterId: string;
   inviterName: string;
+  senderName?: string;
   inviteeId: string;
   inviteeName: string;
   status: 'pending' | 'accepted' | 'rejected';
@@ -115,6 +119,7 @@ export interface UserSearchResult {
   name: string;
   email: string;
   username: string;
+  leetcodeUsername?: string;
   avatar?: string;
 }
 

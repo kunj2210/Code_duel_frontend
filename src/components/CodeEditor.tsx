@@ -53,9 +53,11 @@ export default function CodeEditor() {
 
 
   // 🔹 Monaco Shortcuts
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount = (editor: unknown, monaco: unknown) => {
     // Ctrl + Enter → Run
+    // @ts-expect-error monaco-editor types are complex
     editor.addCommand(
+      // @ts-expect-error monaco-editor types are complex
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter,
       () => {
         handleRunCode();
@@ -63,7 +65,9 @@ export default function CodeEditor() {
     );
 
     // Ctrl + S → Save
+    // @ts-expect-error monaco-editor types are complex
     editor.addCommand(
+      // @ts-expect-error monaco-editor types are complex
       monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
       () => {
         handleSaveCode();
@@ -71,9 +75,12 @@ export default function CodeEditor() {
     );
 
     // Ctrl + Shift + F → Format
+    // @ts-expect-error monaco-editor types are complex
     editor.addCommand(
+      // @ts-expect-error monaco-editor types are complex
       monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
       () => {
+        // @ts-expect-error monaco-editor types
         editor.getAction("editor.action.formatDocument").run();
       }
     );

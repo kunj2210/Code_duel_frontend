@@ -10,11 +10,11 @@ export const useLeaderboard = (
   sortOrder: 'asc' | 'desc'
 ) => {
   const processedData = useMemo(() => {
-    let filtered = data.filter((entry) =>
+    const filtered = data.filter((entry) =>
       entry.userName.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    let sorted = [...filtered].sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       const aValue = a[sortKey] ?? 0;
       const bValue = b[sortKey] ?? 0;
 

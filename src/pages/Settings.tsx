@@ -103,7 +103,7 @@ const Settings: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [leetcodeSession, toast, checkSessionStatus]);
+  }, [leetcodeSession, toast, checkSessionStatus, delayedNavigate]);
 
   const handleInvalidateSession = useCallback(async () => {
     setIsLoading(true);
@@ -172,7 +172,7 @@ const Settings: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [leetcodeUsername, toast, updateUser, user]);
+  }, [leetcodeUsername, toast, updateUser, user, delayedNavigate]);
 
   return (
     <Layout>
@@ -302,10 +302,10 @@ const Settings: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="cookie">LEETCODE_SESSION Cookie</Label>
                     <Input
-                    id="cookie"
-                    type="password"
-                    value={leetcodeSession.cookie}
-                    onChange={(e) =>
+                      id="cookie"
+                      type="password"
+                      value={leetcodeSession.cookie}
+                      onChange={(e) =>
                         setLeetcodeSession({
                           ...leetcodeSession,
                           cookie: e.target.value,

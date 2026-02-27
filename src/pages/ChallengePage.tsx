@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Challenge } from "@/types";
 import { challengeApi, dashboardApi } from "@/lib/api";
+import { useRealTimeDuel } from "@/hooks/useRealTimeDuel";
 
 const ChallengePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -37,13 +38,7 @@ const ChallengePage: React.FC = () => {
   const [isActivating, setIsActivating] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadChallengeData();
-    }
-  }, [id]);
-
-  const loadChallengeData = async () => {
+  const loadChallengeData = useCallback(async () => {
     if (!id) return;
 
     setIsLoading(true);
@@ -74,7 +69,15 @@ const ChallengePage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id, toast]);
+
+  const { status: realTimeStatus } = useRealTimeDuel(id, loadChallengeData);
+
+  useEffect(() => {
+    if (id) {
+      loadChallengeData();
+    }
+  }, [id, loadChallengeData]);
 
   const handleJoinChallenge = async () => {
     if (!id) return;
@@ -161,7 +164,7 @@ const ChallengePage: React.FC = () => {
     0,
     Math.ceil(
       (new Date(challenge.endDate).getTime() - Date.now()) /
-        (1000 * 60 * 60 * 24)
+      (1000 * 60 * 60 * 24)
     )
   );
 
@@ -170,7 +173,7 @@ const ChallengePage: React.FC = () => {
     Math.ceil(
       (new Date(challenge.endDate).getTime() -
         new Date(challenge.startDate).getTime()) /
-        (1000 * 60 * 60 * 24)
+      (1000 * 60 * 60 * 24)
     )
   );
 
@@ -207,6 +210,9 @@ const ChallengePage: React.FC = () => {
               </Badge>
               <Badge variant="outline">
                 {challenge.status}
+              </Badge>
+              <Badge variant={realTimeStatus === 'CONNECTED' ? 'default' : 'secondary'} className={realTimeStatus === 'CONNECTED' ? 'bg-green-500 hover:bg-green-600' : ''}>
+                {realTimeStatus === 'CONNECTED' ? 'Live' : realTimeStatus === 'POLLING' ? 'Polling' : 'Connecting...'}
               </Badge>
             </div>
 

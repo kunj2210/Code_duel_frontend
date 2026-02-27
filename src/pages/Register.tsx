@@ -69,10 +69,10 @@ const Register: React.FC = () => {
         variant: 'success',
       });
       delayedNavigate('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: 'Registration failed',
-        description: error.message || 'Please try again.',
+        description: (error as Error).message || 'Please try again.',
         variant: 'destructive',
       });
     }
