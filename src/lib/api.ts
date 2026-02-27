@@ -12,6 +12,19 @@ import type {
   LeetCodeProfile,
 } from "@/types";
 
+export type {
+  User,
+  Challenge,
+  Stats,
+  ActivityData,
+  ChartData,
+  ChallengeInvite,
+  UserSearchResult,
+  DashboardResponse,
+  LeaderboardEntry,
+  LeetCodeProfile,
+};
+
 // API Base URL - Change this to your backend URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 

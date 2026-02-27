@@ -130,11 +130,11 @@ const CreateChallenge: React.FC = () => {
         throw new Error(response.message || "Failed to create challenge");
       }
     } catch (error: unknown) {
+      const err = error as any;
       toast({
         title: "Failed to create challenge",
-        description: getErrorMessage(error),
         description: DOMPurify.sanitize(
-          error.response?.data?.message || error.message || "Please try again."
+          err.response?.data?.message || err.message || "Please try again."
         ),
         variant: "destructive",
       });
@@ -173,7 +173,7 @@ const CreateChallenge: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Challenge Name</Label>
                 <Input
-                id="name"
+                  id="name"
                   placeholder="e.g., January Grind, Hard Mode Warriors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -215,7 +215,7 @@ const CreateChallenge: React.FC = () => {
                   </p>
                 </div>
 
-                    
+
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Minimum Difficulty</Label>
                   <Select value={difficulty} onValueChange={setDifficulty}>

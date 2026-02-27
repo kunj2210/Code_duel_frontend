@@ -7,7 +7,8 @@ export const currentUser: User = {
   name: 'Alex Chen',
   email: 'alex@example.com',
   avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
-  leetcodeUsername: 'alexchen'
+  leetcodeUsername: 'alexchen',
+  createdAt: '2023-01-01T00:00:00Z'
 };
 
 export const mockStats: Stats = {
@@ -38,6 +39,7 @@ export const mockChallenges: Challenge[] = [
         userName: 'Alex Chen',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
         status: 'completed',
+        joinedAt: '2024-01-01T00:00:00Z',
         streak: 14,
         totalPenalty: 10,
         dailyProgress: []
@@ -47,6 +49,7 @@ export const mockChallenges: Challenge[] = [
         userName: 'Sarah Miller',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
         status: 'completed',
+        joinedAt: '2024-01-02T00:00:00Z',
         streak: 12,
         totalPenalty: 15,
         dailyProgress: []
@@ -56,6 +59,7 @@ export const mockChallenges: Challenge[] = [
         userName: 'John Doe',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
         status: 'failed',
+        joinedAt: '2024-01-03T00:00:00Z',
         streak: 5,
         totalPenalty: 45,
         dailyProgress: []
@@ -78,6 +82,7 @@ export const mockChallenges: Challenge[] = [
         userName: 'Alex Chen',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Alex',
         status: 'pending',
+        joinedAt: '2024-01-15T00:00:00Z',
         streak: 8,
         totalPenalty: 20,
         dailyProgress: []
@@ -87,6 +92,7 @@ export const mockChallenges: Challenge[] = [
         userName: 'Mike Johnson',
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike',
         status: 'completed',
+        joinedAt: '2024-01-16T00:00:00Z',
         streak: 10,
         totalPenalty: 10,
         dailyProgress: []
@@ -108,11 +114,11 @@ export const mockLeaderboard: LeaderboardEntry[] = [
 export const generateActivityData = (): ActivityData[] => {
   const data: ActivityData[] = [];
   const today = new Date();
-  
+
   for (let i = 364; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    
+
     // Random activity level (0-4)
     const random = Math.random();
     let count = 0;
@@ -120,13 +126,13 @@ export const generateActivityData = (): ActivityData[] => {
     if (random > 0.5) count = 2;
     if (random > 0.7) count = 3;
     if (random > 0.9) count = 4;
-    
+
     data.push({
       date: date.toISOString().split('T')[0],
       count
     });
   }
-  
+
   return data;
 };
 
@@ -136,18 +142,18 @@ export const mockActivityData = generateActivityData();
 export const generateChartData = (): ChartData[] => {
   const data: ChartData[] = [];
   const today = new Date();
-  
+
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
-    
+
     data.push({
       date: date.toISOString().split('T')[0],
       solved: Math.floor(Math.random() * 4) + 1,
       target: 2
     });
   }
-  
+
   return data;
 };
 
