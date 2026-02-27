@@ -1,18 +1,21 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { User } from "@/types";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { authApi } from "@/lib/api";
+import { User } from "@/types";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (emailOrUsername: string, password: string) => Promise<void>;
+  login: (
+    emailOrUsername: string,
+    password: string
+  ) => Promise<{ success: boolean; message?: string }>;
   register: (
     username: string,
     email: string,
     password: string,
     leetcodeUsername: string
-  ) => Promise<void>;
+  ) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
   updateUser: (updatedUser: User) => void;
 }
@@ -25,16 +28,24 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const mapApiUserToUser = (userData: unknown): User => {
   const data = userData as {
     id: string;
-    username: string;
+    username?: string;
+    name?: string;
     email: string;
-    leetcodeUsername: string;
+    leetcodeUsername?: string;
+    avatar?: string;
+    createdAt?: string;
   };
+  const username = data.username || data.name || "user";
   return {
     id: data.id,
-    name: data.username,
+    name: data.name || username,
+    username,
     email: data.email,
-    leetcodeUsername: data.leetcodeUsername,
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`,
+    leetcodeUsername: data.leetcodeUsername || "",
+    avatar:
+      data.avatar ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`,
+    createdAt: data.createdAt,
   };
 };
 
@@ -44,65 +55,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Restore auth token from localStorage on mount, then fetch and validate user profile from backend
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem("auth_token");
+      const savedUser = localStorage.getItem("user");
 
-      if (token) {
+      if (!token) {
+        setIsLoading(false);
+        return;
+      }
+
+      if (savedUser) {
         try {
-          // Call backend to validate token and fetch fresh user data
-          const response = await authApi.getProfile();
-
-          if (response.success && response.data) {
-            const mappedUser = mapApiUserToUser(response.data);
-
-            // Update localStorage with fresh user data
-            localStorage.setItem("user", JSON.stringify(mappedUser));
-            setUser(mappedUser);
-          } else {
-            // Profile fetch unsuccessful, clear auth
-            console.warn("Profile fetch unsuccessful:", response.message);
-            localStorage.removeItem("auth_token");
-            localStorage.removeItem("user");
-          }
-        } catch (error: unknown) {
-          const err = error as { message?: string; response?: { status?: number } };
-          const status = err.response?.status;
-
-          if (status === 401 || status === 403) {
-            // Token validation failed (expired, revoked, or invalid)
-            console.error(
-              "Token validation failed during session restore:",
-              err.message || error
-            );
-
-            // Clear auth data on explicit auth failure
-            localStorage.removeItem("auth_token");
-            localStorage.removeItem("user");
-          } else {
-            // Non-auth or network error: keep existing auth, try to restore from localStorage
-            console.warn(
-              "Non-auth error during session restore; preserving stored auth:",
-              err.message || error
-            );
-            const storedUser = localStorage.getItem("user");
-            if (storedUser) {
-              try {
-                const parsedUser: User = JSON.parse(storedUser);
-                setUser(parsedUser);
-              } catch (parseError) {
-                console.error(
-                  "Failed to parse stored user during session restore:",
-                  parseError
-                );
-                localStorage.removeItem("user");
-              }
-            }
-          }
+          setUser(JSON.parse(savedUser));
+        } catch {
+          localStorage.removeItem("user");
         }
       }
-      setIsLoading(false);
+
+      try {
+        const response = await authApi.getProfile();
+        if (response.success && response.data) {
+          const mappedUser = mapApiUserToUser(response.data);
+          localStorage.setItem("user", JSON.stringify(mappedUser));
+          setUser(mappedUser);
+        } else {
+          localStorage.removeItem("auth_token");
+          localStorage.removeItem("user");
+          setUser(null);
+        }
+      } catch (error: unknown) {
+        console.error("Profile fetch unsuccessful during session restore:", error);
+        localStorage.removeItem("auth_token");
+        localStorage.removeItem("user");
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadUser();
@@ -113,36 +102,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       const response = await authApi.login(emailOrUsername, password);
 
-      if (response.success && response.data) {
-        const { user: userData, token } = response.data;
-        const mappedUser = mapApiUserToUser(userData);
-
-        localStorage.setItem("auth_token", token);
-        localStorage.setItem("user", JSON.stringify(mappedUser));
-        setUser(mappedUser);
-      } else {
-        throw new Error(response.message || "Login failed");
+      if (!response.success || !response.data) {
+        return { success: false, message: response.message || "Login failed" };
       }
+
+      const { user: userData, token } = response.data;
+      const mappedUser = mapApiUserToUser(userData);
+
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("user", JSON.stringify(mappedUser));
+      setUser(mappedUser);
+
+      return { success: true };
     } catch (error: unknown) {
-      // Allow mock login in development if backend is not found
-      const err = error as { message?: string };
+      const err = error as { message?: string; response?: { data?: { message?: string } } };
       if (err.message === "Network Error") {
         console.warn("Backend not found. Using mock login for UI preview.");
         const mockUser: User = {
-          id: 'mock-id',
-          name: emailOrUsername.split('@')[0] || emailOrUsername,
-          email: emailOrUsername.includes('@') ? emailOrUsername : `${emailOrUsername}@example.com`,
-          leetcodeUsername: emailOrUsername.split('@')[0] || emailOrUsername,
+          id: "mock-id",
+          name: emailOrUsername.split("@")[0] || emailOrUsername,
+          email: emailOrUsername.includes("@")
+            ? emailOrUsername
+            : `${emailOrUsername}@example.com`,
+          leetcodeUsername: emailOrUsername.split("@")[0] || emailOrUsername,
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${emailOrUsername}`,
         };
         localStorage.setItem("auth_token", "mock-token");
         localStorage.setItem("user", JSON.stringify(mockUser));
         setUser(mockUser);
-        return;
+        return { success: true };
       }
-      const errMsg = error as { response?: { data?: { message?: string; error?: string } } };
-      const errorMessage = errMsg.response?.data?.message || errMsg.response?.data?.error || (error as Error).message || "Login failed";
-      throw new Error(errorMessage);
+      return {
+        success: false,
+        message:
+          err.response?.data?.message || err.message || "Login failed",
+      };
     } finally {
       setIsLoading(false);
     }
@@ -156,25 +150,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   ) => {
     setIsLoading(true);
     try {
-      const response = await authApi.register(email, username, password, leetcodeUsername);
+      const response = await authApi.register(
+        email,
+        username,
+        password,
+        leetcodeUsername
+      );
 
-      if (response.success && response.data) {
-        const { user: userData, token } = response.data;
-        const mappedUser = mapApiUserToUser(userData);
-
-        localStorage.setItem("auth_token", token);
-        localStorage.setItem("user", JSON.stringify(mappedUser));
-        setUser(mappedUser);
-      } else {
-        throw new Error(response.message || "Registration failed");
+      if (!response.success || !response.data) {
+        return {
+          success: false,
+          message: response.message || "Registration failed",
+        };
       }
+
+      const { user: userData, token } = response.data;
+      const mappedUser = mapApiUserToUser(userData);
+
+      localStorage.setItem("auth_token", token);
+      localStorage.setItem("user", JSON.stringify(mappedUser));
+      setUser(mappedUser);
+
+      return { success: true };
     } catch (error: unknown) {
-      // Allow mock registration in development if backend is not found
-      const err = error as { message?: string };
+      const err = error as { message?: string; response?: { data?: { message?: string } } };
       if (err.message === "Network Error") {
         console.warn("Backend not found. Using mock registration for UI preview.");
         const mockUser: User = {
-          id: 'mock-id',
+          id: "mock-id",
           name: username,
           email: email,
           leetcodeUsername: leetcodeUsername,
@@ -183,11 +186,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.setItem("auth_token", "mock-token");
         localStorage.setItem("user", JSON.stringify(mockUser));
         setUser(mockUser);
-        return;
+        return { success: true };
       }
-      const errMsg = error as { response?: { data?: { message?: string; error?: string } } };
-      const errorMessage = errMsg.response?.data?.message || errMsg.response?.data?.error || (error as Error).message || "Registration failed";
-      throw new Error(errorMessage);
+      return {
+        success: false,
+        message:
+          err.response?.data?.message ||
+          err.message ||
+          "Registration failed",
+      };
     } finally {
       setIsLoading(false);
     }
@@ -223,7 +230,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;

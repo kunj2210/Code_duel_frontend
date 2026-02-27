@@ -11,7 +11,7 @@ import ChallengeCard from "@/components/dashboard/ChallengeCard";
 import InviteRequests from "@/components/dashboard/InviteRequests";
 import EmptyState from "@/components/common/EmptyState";
 import { useAuth } from "@/contexts/AuthContext";
-import { dashboardApi, challengeApi, TodayStatusResponse, DashboardResponse, ApiResponse, DashboardStats } from "@/lib/api";
+import { dashboardApi, challengeApi } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Stats, ActivityData, ChartData, Challenge } from "@/types";
 
@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
   }, [loadDashboardData]);
 
   return (
-  <Layout>
+    <Layout>
       <div className="space-y-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -193,7 +193,6 @@ const Dashboard: React.FC = () => {
             </Button>
           </div>
 
-
           {challenges.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {challenges.slice(0, 3).map((challenge) => (
@@ -207,7 +206,7 @@ const Dashboard: React.FC = () => {
               description="Create or join a challenge to start competing with others and stay motivated!"
               action={{
                 label: "Create Challenge",
-                onClick: () => { },
+                onClick: () => {},
               }}
             />
           )}

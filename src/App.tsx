@@ -1,72 +1,60 @@
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// Contexts
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-
-// Components
-import { Toaster } from "@/components/ui/toaster";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import CodeEditor from "./components/CodeEditor";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 
-// Pages
-import Home from "./pages/Home";
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
-import ChallengePage from "./pages/ChallengePage";
-import CreateChallenge from "./pages/CreateChallenge";
-import Leaderboard from "./pages/Leaderboard";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
-import Leetcode from "./pages/Leetcode";
-import NotFound from "./pages/NotFound";
+import CodeEditor from "@/components/CodeEditor";
+import Index from "@/pages/Index";
+import Dashboard from "@/pages/Dashboard";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import ChallengePage from "@/pages/ChallengePage";
+import CreateChallenge from "@/pages/CreateChallenge";
+import Leaderboard from "@/pages/Leaderboard";
+import Settings from "@/pages/Settings";
+import Profile from "@/pages/Profile";
+import Leetcode from "@/pages/Leetcode";
+import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// --- Protected Route ---
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return null;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+  if (isLoading) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
 
   return <>{children}</>;
 };
 
-// --- Auth Route (redirect if logged in) ---
 const AuthRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  if (isLoading) {
-    return null;
-  }
-
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
+  if (isLoading) return null;
+  if (isAuthenticated) return <Navigate to="/dashboard" replace />;
 
   return <>{children}</>;
 };
 
-// --- App Routes Component ---
 const AppRoutes: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
-      {/* Public Landing Page / Dashboard */}
-      <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Index />} />
+      <Route
+        path="/"
+        element={
+          isAuthenticated ? <Navigate to="/dashboard" replace /> : <Index />
+        }
+      />
 
-      {/* Auth Routes */}
       <Route
         path="/login"
         element={
@@ -84,7 +72,14 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Protected Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
       <Route
         path="/leetcode"
         element={
@@ -93,12 +88,11 @@ const AppRoutes: React.FC = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/duel-editor" element={<CodeEditor />} />
       <Route
-        path="/dashboard"
+        path="/duel-editor"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <CodeEditor />
           </ProtectedRoute>
         }
       />
@@ -143,26 +137,20 @@ const AppRoutes: React.FC = () => {
         }
       />
 
-      {/* Catch-all */}
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
 };
 
-// --- Main App ---
-const App = () => {
+const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
           <TooltipProvider>
             <Toaster />
-            <BrowserRouter
-              future={{
-                v7_startTransition: true,
-                v7_relativeSplatPath: true,
-              }}
-            >
+            <Sonner />
+            <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
           </TooltipProvider>

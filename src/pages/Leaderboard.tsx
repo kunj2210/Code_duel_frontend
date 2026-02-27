@@ -1,49 +1,62 @@
-import { useLeaderboard } from '@/hooks/useLeaderboard';
-import React, { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, Trophy, Medal, Award, TrendingUp, Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Layout from '@/components/layout/Layout';
-import LeaderboardTable from '@/components/leaderboard/LeaderboardTable';
-import { dashboardApi } from '@/lib/api';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { LeaderboardEntry } from '@/types';
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft, Trophy, Medal, Award, TrendingUp, Loader2 } from "lucide-react";
+
+import Layout from "@/components/layout/Layout";
+import LeaderboardTable from "@/components/leaderboard/LeaderboardTable";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { dashboardApi } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { LeaderboardEntry } from "@/types";
+import { useLeaderboard } from "@/hooks/useLeaderboard";
 
 const Leaderboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortKey, setSortKey] = useState<'rank' | 'totalSolved' | 'currentStreak' | 'penaltyAmount'>('rank');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const loadLeaderboard = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await dashboardApi.getGlobalLeaderboard();
-      if (response.success && response.data) {
-        setLeaderboardData(response.data);
-      } else {
-        throw new Error(response.message || 'Failed to fetch leaderboard data');
-      }
-    } catch (error) {
-      console.error('Failed to load leaderboard:', error);
-      toast({
-        title: 'Error loading leaderboard',
-        description: 'Could not fetch the latest rankings. Please try again later.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [toast]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortKey, setSortKey] = useState<
+    "rank" | "totalSolved" | "currentStreak" | "penaltyAmount"
+  >("rank");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
+    const loadLeaderboard = async () => {
+      setIsLoading(true);
+      try {
+        const response = await dashboardApi.getGlobalLeaderboard();
+        if (response.success && response.data) {
+          setLeaderboardData(response.data);
+        } else {
+          throw new Error(response.message || "Failed to load leaderboard");
+        }
+      } catch (error) {
+        console.error("Failed to load leaderboard:", error);
+        toast({
+          title: "Error loading leaderboard",
+          description: "Could not fetch leaderboard.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadLeaderboard();
-  }, [loadLeaderboard]);
+  }, [toast]);
 
   const processedLeaderboard = useLeaderboard(
     leaderboardData,
@@ -52,124 +65,130 @@ const Leaderboard: React.FC = () => {
     sortOrder
   );
 
-  const topThree = processedLeaderboard.slice(0, 3);
+  const topThree = useMemo(() => processedLeaderboard.slice(0, 3), [processedLeaderboard]);
 
-  const totalSolved = processedLeaderboard.reduce(
-    (acc, e) => acc + (e.totalSolved || 0),
-    0
+  const totalSolved = useMemo(
+    () =>
+      processedLeaderboard.reduce(
+        (acc, entry) => acc + (entry.totalSolved || 0),
+        0
+      ),
+    [processedLeaderboard]
   );
 
-  const longestStreak =
-    processedLeaderboard.length > 0
-      ? Math.max(...processedLeaderboard.map(e => e.currentStreak || 0))
-      : 0;
-
-  const totalPenalties = processedLeaderboard.reduce(
-    (acc, e) => acc + (e.penaltyAmount || 0),
-    0
+  const longestStreak = useMemo(
+    () =>
+      processedLeaderboard.length > 0
+        ? Math.max(
+          ...processedLeaderboard.map((entry) => entry.currentStreak || 0)
+        )
+        : 0,
+    [processedLeaderboard]
   );
+
+  const totalPenalties = useMemo(
+    () =>
+      processedLeaderboard.reduce(
+        (acc, entry) => acc + (entry.penaltyAmount || 0),
+        0
+      ),
+    [processedLeaderboard]
+  );
+
   return (
     <Layout>
-      <div className="space-y-8">
-        {/* Back Button */}
-        <Button variant="ghost" size="sm" asChild className="gap-2">
-          <Link to="/">
+      <div className="space-y-6">
+        <Button variant="ghost" size="sm" asChild>
+          <Link to="/dashboard" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Dashboard
           </Link>
         </Button>
 
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">
-            <span className="gradient-text">Leaderboard</span>
-          </h1>
-          <p className="text-muted-foreground">
-            See who's leading the pack in solving problems
-          </p>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <Input
+            placeholder="Search username..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+          />
+
+          <Select
+            value={sortKey}
+            onValueChange={(value) => setSortKey(value as typeof sortKey)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="rank">Rank</SelectItem>
+              <SelectItem value="totalSolved">Solved</SelectItem>
+              <SelectItem value="currentStreak">Streak</SelectItem>
+              <SelectItem value="penaltyAmount">Penalty</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as typeof sortOrder)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Order" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Ascending</SelectItem>
+              <SelectItem value="desc">Descending</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : leaderboardData.length === 0 ? (
-          <div className="text-center py-10 bg-muted/20 rounded-lg">
-            <Trophy className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-            <h3 className="text-lg font-medium">No Data Available</h3>
-            <p className="text-muted-foreground">The leaderboard is currently empty.</p>
           </div>
         ) : (
           <>
             {/* Top 3 Podium */}
-            <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-6">
-              <input
-                type="text"
-                placeholder="Search user..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-3 py-2 rounded-md border bg-background text-sm"
-              />
-
-              <select
-                value={sortKey}
-                onChange={(e) =>
-                  setSortKey(
-                    e.target.value as 'rank' | 'totalSolved' | 'currentStreak' | 'penaltyAmount'
-                  )
-                }
-                className="px-3 py-2 rounded-md border bg-background text-sm"
-              >
-                <option value="rank">Rank</option>
-                <option value="totalSolved">Solved</option>
-                <option value="currentStreak">Streak</option>
-                <option value="penaltyAmount">Penalty</option>
-              </select>
-
-              <Button
-                size="sm"
-                onClick={() =>
-                  setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-                }
-              >
-                {sortOrder === 'asc' ? 'Asc' : 'Desc'}
-              </Button>
-            </div>
-            {topThree.length >= 3 && (
-              <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto">
+            {topThree.length >= 3 && searchQuery === "" && (
+              <div className="grid grid-cols-3 gap-4 max-w-3xl mx-auto mb-8">
                 {/* 2nd Place */}
                 <div className="order-1 pt-8">
                   <Card className="hover-lift text-center p-4 bg-gradient-to-b from-gray-400/10 to-gray-400/5 border-gray-400/20">
                     <div className="relative mb-3">
                       <Avatar className="h-16 w-16 mx-auto border-4 border-gray-400">
                         <AvatarImage src={topThree[1]?.avatar} />
-                        <AvatarFallback>{topThree[1]?.userName?.charAt(0) || 'U'}</AvatarFallback>
+                        <AvatarFallback>
+                          {topThree[1]?.userName?.charAt(0) || "U"}
+                        </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gray-400 rounded-full p-1">
-                        <Medal className="h-4 w-4 text-primary-foreground" />
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-gray-400 rounded-full p-1 shadow-lg">
+                        <Medal className="h-4 w-4 text-white" />
                       </div>
                     </div>
-                    <p className="font-semibold truncate">{topThree[1]?.userName}</p>
-                    <p className="text-sm text-muted-foreground">{topThree[1]?.totalSolved || 0} solved</p>
-                    <p className="text-xs text-muted-foreground">🔥 {topThree[1]?.currentStreak || 0} streak</p>
+                    <div className="font-bold truncate">{topThree[1]?.userName}</div>
+                    <div className="text-xs text-muted-foreground">#2 Overall</div>
                   </Card>
                 </div>
 
                 {/* 1st Place */}
                 <div className="order-2">
-                  <Card className="hover-lift text-center p-4 bg-gradient-to-b from-yellow-500/10 to-yellow-500/5 border-yellow-500/20 shadow-glow">
-                    <div className="relative mb-3">
-                      <Avatar className="h-20 w-20 mx-auto border-4 border-yellow-500">
+                  <Card className="hover-lift text-center p-6 bg-gradient-to-b from-yellow-500/10 to-yellow-500/5 border-yellow-500/30 shadow-glow border-2">
+                    <div className="relative mb-4">
+                      <Avatar className="h-20 w-20 mx-auto border-4 border-yellow-500 shadow-lg">
                         <AvatarImage src={topThree[0]?.avatar} />
-                        <AvatarFallback>{topThree[0]?.userName?.charAt(0) || 'U'}</AvatarFallback>
+                        <AvatarFallback>
+                          {topThree[0]?.userName?.charAt(0) || "U"}
+                        </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-yellow-500 rounded-full p-1">
-                        <Trophy className="h-4 w-4 text-primary-foreground" />
+                      <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-500 rounded-full p-1.5 shadow-xl animate-pulse">
+                        <Trophy className="h-5 w-5 text-white" />
                       </div>
                     </div>
-                    <p className="font-semibold truncate text-lg">{topThree[0]?.userName}</p>
-                    <p className="text-sm text-muted-foreground">{topThree[0]?.totalSolved || 0} solved</p>
-                    <p className="text-xs text-muted-foreground">🔥 {topThree[0]?.currentStreak || 0} streak</p>
+                    <div className="font-black text-lg truncate text-yellow-500">
+                      {topThree[0]?.userName}
+                    </div>
+                    <div className="text-xs font-semibold uppercase tracking-wider text-yellow-600">
+                      Grand Master
+                    </div>
                   </Card>
                 </div>
 
@@ -179,57 +198,83 @@ const Leaderboard: React.FC = () => {
                     <div className="relative mb-3">
                       <Avatar className="h-14 w-14 mx-auto border-4 border-amber-600">
                         <AvatarImage src={topThree[2]?.avatar} />
-                        <AvatarFallback>{topThree[2]?.userName?.charAt(0) || 'U'}</AvatarFallback>
+                        <AvatarFallback>
+                          {topThree[2]?.userName?.charAt(0) || "U"}
+                        </AvatarFallback>
                       </Avatar>
-                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-600 rounded-full p-1">
-                        <Award className="h-4 w-4 text-primary-foreground" />
+                      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-amber-600 rounded-full p-1 shadow-md">
+                        <Award className="h-4 w-4 text-white" />
                       </div>
                     </div>
-                    <p className="font-semibold truncate">{topThree[2]?.userName}</p>
-                    <p className="text-sm text-muted-foreground">{topThree[2]?.totalSolved || 0} solved</p>
-                    <p className="text-xs text-muted-foreground">🔥 {topThree[2]?.currentStreak || 0} streak</p>
+                    <div className="font-bold truncate">{topThree[2]?.userName}</div>
+                    <div className="text-xs text-muted-foreground">#3 Overall</div>
                   </Card>
                 </div>
               </div>
             )}
 
-            {/* Stats Summary */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="hover-lift">
-                <CardContent className="p-4 text-center">
-                  <TrendingUp className="h-8 w-8 mx-auto mb-2 text-primary" />
-                  <p className="text-2xl font-bold">{totalSolved}</p>
-                  <p className="text-sm text-muted-foreground">Total Solved</p>
+            {/* Top Performers (Upstream style if not enough for podium or searching) */}
+            {(topThree.length < 3 || searchQuery !== "") && topThree.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <TrendingUp className="h-5 w-5 text-primary" />
+                    <h2 className="font-semibold">Top Performers</h2>
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-3">
+                    {topThree.map((entry) => (
+                      <div
+                        key={entry.userId}
+                        className="rounded-md border p-3 text-sm flex items-center gap-3 bg-muted/30"
+                      >
+                        <span className="font-bold text-lg text-primary">#{entry.rank}</span>
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{entry.userName}</p>
+                          <p className="text-xs text-muted-foreground uppercase">
+                            {entry.totalSolved} solved
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
-              <Card className="hover-lift">
-                <CardContent className="p-4 text-center">
-                  <Trophy className="h-8 w-8 mx-auto mb-2 text-yellow-500" />
-                  <p className="text-2xl font-bold">{processedLeaderboard.length}</p>
-                  <p className="text-sm text-muted-foreground">Participants</p>
-                </CardContent>
-              </Card>
-              <Card className="hover-lift">
-                <CardContent className="p-4 text-center">
-                  <span className="text-3xl">🔥</span>
-                  <p className="text-2xl font-bold">{longestStreak}</p>
-                  <p className="text-sm text-muted-foreground">Longest Streak</p>
-                </CardContent>
-              </Card>
-              <Card className="hover-lift">
-                <CardContent className="p-4 text-center">
-                  <span className="text-3xl">💸</span>
-                  <p className="text-2xl font-bold">${totalPenalties}</p>
-                  <p className="text-sm text-muted-foreground">Total Penalties</p>
-                </CardContent>
-              </Card>
-            </div>
+            )}
 
-            {/* Full Leaderboard */}
             <LeaderboardTable
               entries={processedLeaderboard}
               currentUserId={user?.id}
             />
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <Card className="hover-lift border-primary/20">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Solved</p>
+                    <p className="text-2xl font-black text-primary">{totalSolved}</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-primary/20" />
+                </CardContent>
+              </Card>
+              <Card className="hover-lift border-yellow-500/20">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Longest Streak</p>
+                    <p className="text-2xl font-black text-yellow-500">{longestStreak}d</p>
+                  </div>
+                  <Trophy className="h-8 w-8 text-yellow-500/20" />
+                </CardContent>
+              </Card>
+              <Card className="hover-lift border-destructive/20">
+                <CardContent className="p-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Total Penalties</p>
+                    <p className="text-2xl font-black text-destructive">${totalPenalties}</p>
+                  </div>
+                  <Award className="h-8 w-8 text-destructive/20" />
+                </CardContent>
+              </Card>
+            </div>
           </>
         )}
       </div>

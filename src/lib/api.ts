@@ -136,7 +136,7 @@ export interface SessionStatus {
 
 // ============================================================================
 // AUTH APIs
-// ============================================================================
+// ============================================================================// API implementations
 export const authApi = {
   login: async (emailOrUsername: string, password: string) => {
     const response = await api.post<ApiResponse<LoginResponse>>(

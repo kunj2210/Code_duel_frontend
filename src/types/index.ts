@@ -19,7 +19,7 @@ export interface Challenge {
   name: string;
   description?: string;
   dailyTarget: number;
-  difficulty: 'easy' | 'medium' | 'hard' | 'any';
+  difficulty: "easy" | "medium" | "hard" | "any";
   penaltyAmount?: number;
   startDate: string;
   endDate: string;
@@ -37,7 +37,7 @@ export interface ChallengeMember {
   userId: string;
   userName: string;
   avatar?: string;
-  status: 'completed' | 'failed' | 'pending';
+  status: "completed" | "failed" | "pending";
   joinedAt: string;
   streak: number;
   totalPenalty: number;
@@ -48,7 +48,7 @@ export interface DailyProgress {
   date: string;
   solved: number;
   target: number;
-  status: 'completed' | 'failed' | 'pending';
+  status: "completed" | "failed" | "pending";
 }
 
 export interface LeaderboardEntry {
@@ -63,7 +63,7 @@ export interface LeaderboardEntry {
 }
 
 export interface Stats {
-  todayStatus: 'completed' | 'failed' | 'pending';
+  todayStatus: "completed" | "failed" | "pending";
   todaySolved: number;
   todayTarget: number;
   currentStreak: number;
@@ -113,7 +113,7 @@ export interface ChallengeInvite {
   senderName?: string;
   inviteeId: string;
   inviteeName: string;
-  status: 'pending' | 'accepted' | 'rejected';
+  status: "pending" | "accepted" | "rejected";
   createdAt: string;
 }
 
