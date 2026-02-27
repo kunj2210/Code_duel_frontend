@@ -130,7 +130,7 @@ const CreateChallenge: React.FC = () => {
         throw new Error(response.message || "Failed to create challenge");
       }
     } catch (error: unknown) {
-      const err = error as any;
+      const err = error as { message?: string; response?: { data?: { message?: string } } };
       toast({
         title: "Failed to create challenge",
         description: DOMPurify.sanitize(

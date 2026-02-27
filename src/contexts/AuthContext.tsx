@@ -22,13 +22,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 /**
  * Map backend API user response to frontend User type
  */
-const mapApiUserToUser = (userData: any): User => {
+const mapApiUserToUser = (userData: unknown): User => {
+  const data = userData as {
+    id: string;
+    username: string;
+    email: string;
+    leetcodeUsername: string;
+  };
   return {
-    id: userData.id,
-    name: userData.username,
-    email: userData.email,
-    leetcodeUsername: userData.leetcodeUsername,
-    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.username}`,
+    id: data.id,
+    name: data.username,
+    email: data.email,
+    leetcodeUsername: data.leetcodeUsername,
+    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.username}`,
   };
 };
 
@@ -60,14 +66,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             localStorage.removeItem("auth_token");
             localStorage.removeItem("user");
           }
-        } catch (error: any) {
-          const status = (error as any)?.response?.status;
+        } catch (error: unknown) {
+          const err = error as { message?: string; response?: { status?: number } };
+          const status = err.response?.status;
 
           if (status === 401 || status === 403) {
             // Token validation failed (expired, revoked, or invalid)
             console.error(
               "Token validation failed during session restore:",
-              error?.message || error
+              err.message || error
             );
 
             // Clear auth data on explicit auth failure
@@ -77,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             // Non-auth or network error: keep existing auth, try to restore from localStorage
             console.warn(
               "Non-auth error during session restore; preserving stored auth:",
-              error?.message || error
+              err.message || error
             );
             const storedUser = localStorage.getItem("user");
             if (storedUser) {
