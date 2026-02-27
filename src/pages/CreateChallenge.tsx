@@ -24,6 +24,7 @@ import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
 import { challengeApi } from "@/lib/api";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { getErrorMessage } from "@/lib/utils";
 import DOMPurify from "dompurify";
 
 const getTodayString = () => {
@@ -127,9 +128,10 @@ const CreateChallenge: React.FC = () => {
       } else {
         throw new Error(response.message || "Failed to create challenge");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Failed to create challenge",
+        description: getErrorMessage(error),
         description: DOMPurify.sanitize(
           error.response?.data?.message || error.message || "Please try again."
         ),
@@ -170,12 +172,12 @@ const CreateChallenge: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Challenge Name</Label>
                 <Input
-                  id="name"
+                id="name"
                   placeholder="e.g., January Grind, Hard Mode Warriors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={errors.name ? "border-destructive" : ""}
-                />
+                  />
                 {errors.name && (
                   <p className="text-xs text-destructive">{errors.name}</p>
                 )}
@@ -214,6 +216,7 @@ const CreateChallenge: React.FC = () => {
                   </p>
                 </div>
 
+                    
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Minimum Difficulty</Label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
