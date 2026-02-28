@@ -71,9 +71,6 @@ export interface LoginResponse {
   token: string;
 }
 
-interface RegisterResponse extends LoginResponse { }
-
-interface ChallengeResponse {
 export type RegisterResponse = LoginResponse;
 
 export interface LeaderboardMember {
@@ -99,16 +96,12 @@ export interface ChallengeResponse {
   ownerId: string;
   createdAt: string;
   members?: any[];
-}
-
   summary: {
     totalChallenges: number;
     activeChallenges: number;
     completedChallenges: number;
     totalPenalties: number;
   };
-  activeChallenges: unknown[];
-  recentActivity: unknown[];
   activeChallenges: Challenge[];
   recentActivity: any[];
 }

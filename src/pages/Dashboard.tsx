@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { useAuth } from "@/contexts/AuthContext";
 import { dashboardApi, challengeApi, TodayStatusResponse, DashboardResponse, ApiResponse, DashboardStats } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { Stats, Achievement, UserTierProgress } from "@/types";
+import { Stats, Achievement, UserTierProgress, ActivityData, ChartData, Challenge } from "@/types";
 import {
   TierBadge,
   RecentAchievements,
@@ -27,22 +27,11 @@ import {
   mockUserPoints,
 } from "@/data/mockData";
 
-import { Stats, ActivityData, ChartData, Challenge } from "@/types";
-
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-
-  // ✅ All data is fetched via cached React Query hooks
-  // No manual useState/useEffect/loadDashboardData needed
-  const { data: statsData, isLoading: statsLoading } = useDashboardStats();
-  const { data: activityData, isLoading: activityLoading } = useActivityHeatmap();
-  const { data: chartData, isLoading: chartLoading } = useSubmissionChart();
-  const { data: challengesData, isLoading: challengesLoading } = useChallenges();
-
-  const isLoading = statsLoading || activityLoading || chartLoading || challengesLoading;
-
-  // Derive stats with fallbacks
-  const stats: Stats = statsData || {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState<Stats>({
     todayStatus: "pending",
     todaySolved: 0,
     todayTarget: 0,
@@ -52,16 +41,13 @@ const Dashboard: React.FC = () => {
     activeChallenges: 0,
     totalSolved: 0,
   });
-  const [challenges, setChallenges] = useState<any[]>([]);
-  const [activityData, setActivityData] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
   const [achievements] = useState<Achievement[]>(mockAchievements);
   const [tierProgress] = useState<UserTierProgress>(
     calculateUserTierProgress(mockUserPoints)
   );
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [activityData, setActivityData] = useState<ActivityData[]>([]);
-  const [chartData, setChartData] = useState<ChartData[]>([]);
 
   const loadDashboardData = React.useCallback(async () => {
     setIsLoading(true);
@@ -208,14 +194,14 @@ const Dashboard: React.FC = () => {
           {/* Right Column - Chart */}
           <div className="lg:col-span-2">
             <ProgressChart
-              data={chart}
+              data={chartData}
               title="Daily Submissions (Last 30 Days)"
             />
           </div>
         </div>
 
         {/* Activity Heatmap */}
-        <ActivityHeatmap data={activity} title="Contribution Graph" />
+        <ActivityHeatmap data={activityData} title="Contribution Graph" />
 
         {/* Gamification Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
