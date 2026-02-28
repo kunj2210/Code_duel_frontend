@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Loader2, Trophy } from "lucide-react";
 
@@ -14,52 +14,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { dashboardApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
 import { LeaderboardEntry } from "@/types";
-import { useLeaderboard } from "@/hooks/useLeaderboard";
+
+// ✅ Centralized React Query hook — cached globally
+import { useGlobalLeaderboard, useLeaderboard } from "@/hooks/useLeaderboard";
 
 const Leaderboard: React.FC = () => {
   const { user } = useAuth();
-  const { toast } = useToast();
 
-  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>(
-    [],
-  );
-  const [isLoading, setIsLoading] = useState(true);
+  // ✅ Single hook replaces useState + useEffect + loadLeaderboard + toast error handling
+  const { data: leaderboardData = [], isLoading } = useGlobalLeaderboard();
+
+  // Client-side filtering and sorting state
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<
     "rank" | "totalSolved" | "currentStreak" | "penaltyAmount"
   >("rank");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
-  useEffect(() => {
-    const loadLeaderboard = async () => {
-      setIsLoading(true);
-      try {
-        const response = await dashboardApi.getGlobalLeaderboard();
-        if (response.success && response.data) {
-          setLeaderboardData(response.data);
-        } else {
-          throw new Error(response.message || "Failed to load leaderboard");
-        }
-      } catch {
-        toast({
-          title: "Error loading leaderboard",
-          description: "Could not fetch leaderboard.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadLeaderboard();
-  }, []);
-
   const processedLeaderboard = useLeaderboard(
-    leaderboardData,
+    leaderboardData as LeaderboardEntry[],
     searchQuery,
     sortKey,
     sortOrder,
@@ -79,8 +54,8 @@ const Leaderboard: React.FC = () => {
     () =>
       processedLeaderboard.length > 0
         ? Math.max(
-            ...processedLeaderboard.map((entry) => entry.currentStreak || 0),
-          )
+          ...processedLeaderboard.map((entry) => entry.currentStreak || 0),
+        )
         : 0,
     [processedLeaderboard],
   );

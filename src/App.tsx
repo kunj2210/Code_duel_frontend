@@ -25,7 +25,16 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000,      // 2 minutes — avoid redundant refetches
+      gcTime: 10 * 60 * 1000,         // 10 minutes — keep cache for back-navigation
+      retry: 1,                        // Retry once on failure
+      refetchOnWindowFocus: true,      // Refresh data when user returns to tab
+    },
+  },
+});
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
