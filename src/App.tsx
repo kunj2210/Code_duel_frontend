@@ -20,9 +20,13 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Leetcode from "./pages/Leetcode";
+import StreakTest from "./pages/StreakTest";
+
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+
+import CodeEditor from "@/components/CodeEditor";
 
 
 
@@ -68,6 +72,13 @@ const AppRoutes: React.FC = () => {
           isAuthenticated ? <Navigate to="/dashboard" replace /> : <Index />
         }
       />
+
+
+      {/* Streak Test Page (Public for easy testing) */}
+      <Route path="/streak-test" element={<StreakTest />} />
+
+      {/* Auth Routes */}
+
 
       <Route
         path="/login"
