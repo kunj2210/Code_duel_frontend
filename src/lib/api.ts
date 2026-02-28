@@ -138,7 +138,7 @@ export interface SessionStatus {
 
 // ============================================================================
 // AUTH APIs
-// ============================================================================
+// ============================================================================// API implementations
 export const authApi = {
   login: async (emailOrUsername: string, password: string) => {
     const response = await api.post<ApiResponse<LoginResponse>>(
@@ -176,6 +176,22 @@ export const authApi = {
 
   updateProfile: async (data: { leetcodeUsername?: string }) => {
     const response = await api.put<ApiResponse<User>>("/api/auth/profile", data);
+    return response.data;
+  },
+
+  forgotPassword: async (email: string) => {
+    const response = await api.post<ApiResponse<{ message: string }>>(
+      "/api/auth/forgot-password",
+      { email }
+    );
+    return response.data;
+  },
+
+  resetPassword: async (token: string, newPassword: string) => {
+    const response = await api.post<ApiResponse<{ message: string }>>(
+      "/api/auth/reset-password",
+      { token, newPassword }
+    );
     return response.data;
   },
 };

@@ -23,10 +23,12 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import Layout from "@/components/layout/Layout";
 import { useToast } from "@/hooks/use-toast";
-import { challengeApi } from "@/lib/api";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getErrorMessage } from "@/lib/utils";
 import DOMPurify from "dompurify";
+
+// ✅ Centralized mutation hook — auto-invalidates challenge cache on success
+import { useCreateChallenge } from "@/hooks/useChallenges";
 
 const getTodayString = () => {
   const today = new Date();
@@ -34,6 +36,7 @@ const getTodayString = () => {
 };
 
 const CreateChallenge: React.FC = () => {
+  // Form state stays as useState — correct for controlled form inputs
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [dailyTarget, setDailyTarget] = useState("2");
@@ -42,7 +45,6 @@ const CreateChallenge: React.FC = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [visibility, setVisibility] = useState("PUBLIC");
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const today = format(new Date(), "yyyy-MM-dd");
@@ -52,6 +54,10 @@ const CreateChallenge: React.FC = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // ✅ Mutation replaces direct challengeApi.create() call
+  // On success, auto-invalidates ["challenges"] cache → Dashboard auto-updates
+  const createMutation = useCreateChallenge();
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -93,8 +99,6 @@ const CreateChallenge: React.FC = () => {
 
     if (!validate()) return;
 
-    setIsLoading(true);
-
     try {
       // Map difficulty to difficultyFilter array
       const difficultyFilter: string[] = [];
@@ -107,49 +111,50 @@ const CreateChallenge: React.FC = () => {
       }
       // If 'any', leave empty array
 
-      const response = await challengeApi.create({
-        name,
+      // Sanitize user inputs
+      const sanitizedName = DOMPurify.sanitize(name.trim());
+      const sanitizedDescription = DOMPurify.sanitize(description.trim());
+      const sanitizedDailyTarget = parseInt(dailyTarget);
+      const sanitizedPenaltyAmount = parseInt(penaltyAmount);
+      const sanitizedStartDate = new Date(startDate).toISOString();
+      const sanitizedEndDate = new Date(endDate).toISOString();
+      const sanitizedVisibility = visibility as "PUBLIC" | "PRIVATE";
+
+      // ✅ Uses mutation hook — cache invalidation is automatic
+      await createMutation.mutateAsync({
+        name: sanitizedName,
         description:
-          description || `${name} - Solve ${dailyTarget} problem(s) daily`,
-        minSubmissionsPerDay: parseInt(dailyTarget),
+          sanitizedDescription ||
+          `${sanitizedName} - Solve ${sanitizedDailyTarget} problem(s) daily`,
+        minSubmissionsPerDay: sanitizedDailyTarget,
         difficultyFilter,
         uniqueProblemConstraint: true,
-        penaltyAmount: parseInt(penaltyAmount),
-        startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
-        visibility: visibility as "PUBLIC" | "PRIVATE",
+        penaltyAmount: sanitizedPenaltyAmount,
+        startDate: sanitizedStartDate,
+        endDate: sanitizedEndDate,
+        visibility: sanitizedVisibility,
       });
 
-      if (response.success) {
-        toast({
-          title: "Challenge created!",
-          description: "Your challenge has been created successfully.",
-        });
-        navigate("/");
-      } else {
-        throw new Error(response.message || "Failed to create challenge");
-      }
+      toast({
+        title: "Challenge created!",
+        description: "Your challenge has been created successfully.",
+      });
+      navigate("/");
     } catch (error: unknown) {
       toast({
         title: "Failed to create challenge",
-        description: getErrorMessage(error),
-        description: DOMPurify.sanitize(
-          error.response?.data?.message || error.message || "Please try again."
-        ),
+        description: DOMPurify.sanitize(getErrorMessage(error)),
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <Layout>
       <div className="max-w-2xl mx-auto space-y-6">
-        {/* Back Button */}
-        <Button variant="ghost" size="sm" asChild className="gap-2">
+        <Button variant="ghost" asChild className="mb-4">
           <Link to="/">
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Link>
         </Button>
@@ -173,7 +178,7 @@ const CreateChallenge: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="name">Challenge Name</Label>
                 <Input
-                id="name"
+                  id="name"
                   placeholder="e.g., January Grind, Hard Mode Warriors"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -215,7 +220,6 @@ const CreateChallenge: React.FC = () => {
                   </p>
                 </div>
 
-                    
                 <div className="space-y-2">
                   <Label htmlFor="difficulty">Minimum Difficulty</Label>
                   <Select value={difficulty} onValueChange={setDifficulty}>
@@ -304,18 +308,22 @@ const CreateChallenge: React.FC = () => {
                 <RadioGroup value={visibility} onValueChange={setVisibility}>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="PUBLIC" id="public" />
-                    <Label htmlFor="public" className="cursor-pointer">Public</Label>
+                    <Label htmlFor="public" className="cursor-pointer">
+                      Public
+                    </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="PRIVATE" id="private" />
-                    <Label htmlFor="private" className="cursor-pointer">Private</Label>
+                    <Label htmlFor="private" className="cursor-pointer">
+                      Private
+                    </Label>
                   </div>
                 </RadioGroup>
                 <p className="text-xs text-muted-foreground">
-                  Public challenges are visible to all users. Private challenges are only visible to the owner and invited members.
+                  Public challenges are visible to all users. Private challenges
+                  are only visible to the owner and invited members.
                 </p>
               </div>
-
 
               <div className="flex gap-3 pt-4">
                 <Button
@@ -329,13 +337,9 @@ const CreateChallenge: React.FC = () => {
                 <Button
                   type="submit"
                   className="flex-1 gradient-primary"
-                  disabled={
-                    isLoading ||
-                    Object.keys(errors).length > 0 ||
-                    !name || !dailyTarget || !penaltyAmount || !startDate || !endDate
-                  }
+                  disabled={createMutation.isPending}
                 >
-                  {isLoading ? (
+                  {createMutation.isPending ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Creating...
