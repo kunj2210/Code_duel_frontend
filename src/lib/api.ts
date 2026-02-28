@@ -71,7 +71,20 @@ export interface LoginResponse {
   token: string;
 }
 
-export type RegisterResponse = LoginResponse;
+// RegisterResponse is intentionally identical to LoginResponse but kept as a separate type
+// for potential future extensions specific to registration
+export interface RegisterResponse extends LoginResponse {}
+
+export interface DashboardResponse {
+  summary: {
+    totalChallenges: number;
+    activeChallenges: number;
+    completedChallenges: number;
+    totalPenalties: number;
+  };
+  activeChallenges: Challenge[];
+  recentActivity: Record<string, unknown>[];
+}
 
 export interface LeaderboardMember {
   userId: string;
@@ -108,7 +121,7 @@ export interface ChallengeResponse {
 
 export interface TodayStatusResponse {
   date: string;
-  challenges: unknown[];
+  challenges: Challenge[];
   summary: {
     totalChallenges: number;
     completed: number;
@@ -227,7 +240,7 @@ export const challengeApi = {
   },
 
   join: async (id: string) => {
-    const response = await api.post<ApiResponse<null>>(
+    const response = await api.post<ApiResponse<Challenge>>(
       `/api/challenges/${id}/join`
     );
     return response.data;
@@ -239,6 +252,25 @@ export const challengeApi = {
       {
         status,
       }
+    );
+    return response.data;
+  },
+
+  generateInvite: async (
+    challengeId: string,
+    data: { expiresInHours: number; maxUses: number }
+  ) => {
+    const response = await api.post<ApiResponse<any>>(
+      `/api/challenges/${challengeId}/invite`,
+      data
+    );
+    return response.data;
+  },
+
+  joinByCode: async (code: string) => {
+    const response = await api.post<ApiResponse<any>>(
+      "/api/challenges/join-by-code",
+      { code }
     );
     return response.data;
   },
