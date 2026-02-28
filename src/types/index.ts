@@ -152,6 +152,45 @@ export interface GamificationStats {
   totalAchievements: number;
   recentAchievements: Achievement[];
   nextAchievements: Achievement[];
+
+// ============================================
+// Streak & Consistency Tracking Types
+// ============================================
+
+/**
+ * Activity log structure for streak persistence
+ */
+export interface ActivityLog {
+  dates: string[]; // Array of dates in YYYY-MM-DD format
+  currentStreak: number;
+  longestStreak: number;
+  lastUpdated: string;
+}
+
+/**
+ * Complete streak data with statistics
+ */
+export interface StreakData {
+  currentStreak: number;
+  longestStreak: number;
+  totalActiveDays: number;
+  activeToday: boolean;
+  missedDays: number;
+  dates: string[];
+  lastUpdated: string;
+  isLoading: boolean;
+}
+
+/**
+ * Activity statistics summary
+ */
+export interface ActivityStats {
+  currentStreak: number;
+  longestStreak: number;
+  missedDays: number;
+  activeToday: boolean;
+  totalActiveDays: number;
+  dates: string[];
 // LeetCode profile returned from the backend
 export interface LeetCodeProfile {
   username: string;
@@ -193,4 +232,5 @@ export interface DashboardResponse {
   };
   activeChallenges: Challenge[];
   recentActivity: ActivityData[];
+
 }

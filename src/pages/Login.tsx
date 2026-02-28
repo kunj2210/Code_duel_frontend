@@ -38,13 +38,13 @@ const Login: React.FC = () => {
     }
 
     if (!password) {
-      nextErrors.password = "Password is required";
+      newErrors.password = "Password is required";
     } else if (password.length < 6) {
-      nextErrors.password = "Password must be at least 6 characters";
+      newErrors.password = "Password must be at least 6 characters";
     }
 
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -59,7 +59,7 @@ const Login: React.FC = () => {
         description: 'Successfully logged in.',
         variant: 'success',
       });
-      delayedNavigate('/');
+      // delayedNavigate('/');
     } catch {
       toast({
         title: 'Login failed',
