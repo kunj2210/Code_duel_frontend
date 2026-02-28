@@ -20,8 +20,9 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { leetcodeApi, authApi, SessionStatus } from "@/lib/api";
+import { leetcodeApi, authApi } from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
+import { SessionStatus } from "@/types";
 import { getErrorMessage } from "@/lib/utils";
 import { ValidatedInput } from "@/components/common/ValidatedInput";
 import { useDelayedNavigate } from "@/hooks/use-delayed-navigate";
